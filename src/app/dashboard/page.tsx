@@ -348,9 +348,9 @@ export default function Dashboard() {
                           <TableRow 
                             key={d.id} 
                             domain={d.domain} 
-                            vercelUrl={d.vercelUrl} 
-                            moneyUrl={d.moneyUrl} 
-                            anchorText={d.anchorText} 
+                            vercelUrl={d.vercelUrl || d.vercelurl} 
+                            moneyUrl={d.moneyUrl || d.moneyurl} 
+                            anchorText={d.anchorText || d.anchortext} 
                             status={d.status} 
                           />
                         ))}
