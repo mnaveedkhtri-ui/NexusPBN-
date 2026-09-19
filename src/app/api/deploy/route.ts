@@ -567,31 +567,10 @@ Also, embed exactly 2 high-quality images inside the body of the article using t
 
     if (request.signal.aborted) throw new Error('Deployment canceled by user before Push');
 
-    // 5. PUSH FILE TO GITHUB (This will trigger Vercel to build!)
-    await fetch(`https://api.github.com/repos/${githubUsername}/${repoName}/contents/index.html`, {
-      method: 'PUT',
-      headers: {
-        'Authorization': `token ${GITHUB_TOKEN}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        message: 'Initial PBN deployment from Nexus',
-        content: contentEncoded,
-      }),
-    });
-
     // 5b. PUSH ROBOTS.TXT
     const robotsContent = `User-agent: *
 Allow: /
 Sitemap: ${finalEdgeUrl}/sitemap.xml`;
-    await fetch(`https://api.github.com/repos/${githubUsername}/${repoName}/contents/robots.txt`, {
-      method: 'PUT',
-      headers: { 'Authorization': `token ${GITHUB_TOKEN}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        message: 'Add robots.txt',
-        content: Buffer.from(robotsContent).toString('base64'),
-      }),
-    });
 
     // 5c. PUSH SITEMAP.XML
     const sitemapContent = `<?xml version="1.0" encoding="UTF-8"?>
@@ -603,14 +582,37 @@ Sitemap: ${finalEdgeUrl}/sitemap.xml`;
     <priority>1.0</priority>
   </url>
 </urlset>`;
-    await fetch(`https://api.github.com/repos/${githubUsername}/${repoName}/contents/sitemap.xml`, {
-      method: 'PUT',
-      headers: { 'Authorization': `token ${GITHUB_TOKEN}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        message: 'Add sitemap.xml',
-        content: Buffer.from(sitemapContent).toString('base64'),
+
+    // 5. PUSH ALL FILES TO GITHUB IN PARALLEL (Saves 10 seconds!)
+    await Promise.all([
+      fetch(`https://api.github.com/repos/${githubUsername}/${repoName}/contents/index.html`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `token ${GITHUB_TOKEN}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message: 'Initial PBN deployment from Nexus',
+          content: contentEncoded,
+        }),
       }),
-    });
+      fetch(`https://api.github.com/repos/${githubUsername}/${repoName}/contents/robots.txt`, {
+        method: 'PUT',
+        headers: { 'Authorization': `token ${GITHUB_TOKEN}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: 'Add robots.txt',
+          content: Buffer.from(robotsContent).toString('base64'),
+        }),
+      }),
+      fetch(`https://api.github.com/repos/${githubUsername}/${repoName}/contents/sitemap.xml`, {
+        method: 'PUT',
+        headers: { 'Authorization': `token ${GITHUB_TOKEN}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: 'Add sitemap.xml',
+          content: Buffer.from(sitemapContent).toString('base64'),
+        }),
+      })
+    ]);
 
     // 4. Save to Database
     const projectId = generateId();
