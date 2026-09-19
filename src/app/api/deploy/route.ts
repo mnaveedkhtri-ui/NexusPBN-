@@ -204,8 +204,7 @@ The tools required to build a highly profitable digital empire are accessible to
     // 4. GENERATE HTML TEMPLATE WITH EMBEDDED AI CONTENT & FIX TAILWIND LINKS
     
     // --- AI CONTENT ENGINE ---
-    let articleTitle = anchorText.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
-    let aiArticleContent = `${aiArticleContent}`;
+    let articleTitle = anchorText.split(' ').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
 
     if (GEMINI_API_KEY) {
       try {
