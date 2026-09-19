@@ -257,7 +257,7 @@ Also, embed exactly 2 high-quality images inside the body of the article using t
           prompt += `\n\nADDITIONAL RULES TO STRICTLY FOLLOW:\n${aiCustomPrompt}`;
         }
         
-        const aiResponse = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-pro-preview:generateContent?key=' + GEMINI_API_KEY, {
+        const aiResponse = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=' + GEMINI_API_KEY, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
