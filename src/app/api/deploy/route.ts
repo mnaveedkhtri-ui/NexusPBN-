@@ -52,11 +52,24 @@ export async function POST(request: Request) {
     const uniqueId = Math.random().toString(36).substring(2, 7);
     const repoName = `${cleanDomain}-${randomSuffix}-${uniqueId}`;
 
+    // Fetch AI Persona Settings
+    let aiTone = 'Authoritative & Professional';
+    let aiCustomPrompt = '';
+    try {
+      const dbRes = await sql`SELECT tone, custom_prompt FROM ai_settings WHERE user_email = ${userEmail} LIMIT 1`;
+      if (dbRes.rows.length > 0) {
+        aiTone = dbRes.rows[0].tone || aiTone;
+        aiCustomPrompt = dbRes.rows[0].custom_prompt || '';
+      }
+    } catch (err) {
+      console.log('Could not fetch AI Settings:', err);
+    }
+
     // 1. ZIDDI ENGINE - GENERATE CONTENT (Gemini Flash with 3 Retries)
     const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
     const model = genAI.getGenerativeModel({ model: "gemini-3.6-flash" });
     
-    const prompt = `Write a massive, 1200+ word highly SEO-optimized, engaging, and professional blog post for a website about "${niche}".
+    let prompt = `Write a massive, 1200+ word highly SEO-optimized, engaging, and professional blog post for a website about "${niche}".
     Format the response strictly in Markdown. 
     Follow this exact structure:
     1. Start directly with an engaging introductory paragraph. Do not include a main H1 title at the top (I will add it).
@@ -73,7 +86,13 @@ export async function POST(request: Request) {
     ![${niche} Image 1](https://loremflickr.com/1600/900/${encodeURIComponent(niche).replace(/%20/g, ',')},business/all?random=1)
     ![${niche} Image 2](https://loremflickr.com/1600/900/${encodeURIComponent(niche).replace(/%20/g, ',')},business/all?random=2)
     
-    CRITICAL SEO REQUIREMENT: Make the tone 1000% natural and human. Do NOT use em-dashes or en-dashes anywhere. Avoid typical AI buzzwords like delve, realm, tapestry.`;
+    CRITICAL SEO REQUIREMENT: Make the tone 1000% natural and human. Do NOT use em-dashes or en-dashes anywhere. Avoid typical AI buzzwords like delve, realm, tapestry.
+    
+    TONE OF VOICE: ${aiTone}`;
+    
+    if (aiCustomPrompt.trim()) {
+      prompt += `\n\nADDITIONAL RULES TO STRICTLY FOLLOW:\n${aiCustomPrompt}`;
+    }
 
     let markdownContent = '';
     let success = false;
@@ -230,18 +249,7 @@ The tools required to build a highly profitable digital empire are accessible to
     const primaryKeyword = targetKeyword.trim() ? targetKeyword : anchorText;
     let articleTitle = primaryKeyword.split(' ').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
     
-    // Fetch AI Persona Settings
-    let aiTone = 'Authoritative & Professional';
-    let aiCustomPrompt = '';
-    try {
-      const dbRes = await sql`SELECT tone, custom_prompt FROM ai_settings WHERE user_email = ${userEmail} LIMIT 1`;
-      if (dbRes.rows.length > 0) {
-        aiTone = dbRes.rows[0].tone || aiTone;
-        aiCustomPrompt = dbRes.rows[0].custom_prompt || '';
-      }
-    } catch (err) {
-      console.log('Could not fetch AI Settings:', err);
-    }
+
 
     let finalArticleHtml = `<article class="prose prose-slate max-w-none">
             <div class="flex items-center gap-4 mb-8">
@@ -250,7 +258,6 @@ The tools required to build a highly profitable digital empire are accessible to
             </div>
             <h1 class="text-4xl font-extrabold text-slate-900 mb-6 leading-tight tracking-tight">${articleTitle}</h1>
             <p class="text-xl text-slate-600 mb-8 leading-relaxed font-medium">Comprehensive insights and complete guide on ${primaryKeyword}.</p>
-            <p class="text-lg text-slate-600 mb-6 leading-relaxed">Welcome to our detailed overview. For the best strategies, visit <a href="${moneyUrl}" class="text-blue-600 font-semibold hover:underline">${anchorText}</a>.</p>
             ${htmlArticleContent}
           </article>`;
     
