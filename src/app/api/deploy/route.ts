@@ -206,6 +206,20 @@ The tools required to build a highly profitable digital empire are accessible to
     // --- AI CONTENT ENGINE ---
     const primaryKeyword = targetKeyword.trim() ? targetKeyword : anchorText;
     let articleTitle = primaryKeyword.split(' ').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+    
+    // Fetch AI Persona Settings
+    let aiTone = 'Authoritative & Professional';
+    let aiCustomPrompt = '';
+    try {
+      const dbRes = await sql`SELECT tone, custom_prompt FROM ai_settings WHERE id = 'global' LIMIT 1`;
+      if (dbRes.rows.length > 0) {
+        aiTone = dbRes.rows[0].tone || aiTone;
+        aiCustomPrompt = dbRes.rows[0].custom_prompt || '';
+      }
+    } catch (err) {
+      console.log('Could not fetch AI Settings:', err);
+    }
+
     let aiArticleContent = `<article class="prose prose-slate max-w-none">
             <div class="flex items-center gap-4 mb-8">
               <span class="bg-blue-100 text-blue-700 text-xs font-bold px-3 py-1 uppercase tracking-wider rounded-full">${formattedNiche}</span>
@@ -218,7 +232,12 @@ The tools required to build a highly profitable digital empire are accessible to
 
     if (GEMINI_API_KEY) {
       try {
-        const prompt = 'Write a highly engaging, 1500-word GEO and AEO optimized SEO blog article completely focused on the exact primary keyword: "' + primaryKeyword + '". The main H1 title must be highly relevant to this exact keyword. Use proper HTML tags (h1, h2, h3, p, strong, ul, li). Do not include html, head, or body tags, just the inner content. Include a natural contextual backlink in the second or third paragraph to "' + moneyUrl + '" using EXACTLY "' + anchorText + '" as the hyperlink anchor text. Make the content look like a professional magazine article, semantically optimized for featured snippets.';
+        let prompt = `Write a highly engaging, 1500-word GEO and AEO optimized SEO blog article completely focused on the exact primary keyword: "${primaryKeyword}". The main H1 title must be highly relevant to this exact keyword. Use proper HTML tags (h1, h2, h3, p, strong, ul, li). Do not include html, head, or body tags, just the inner content. Include a natural contextual backlink in the second or third paragraph to "${moneyUrl}" using EXACTLY "${anchorText}" as the hyperlink anchor text. Make the content look like a professional magazine article, semantically optimized for featured snippets.`;
+        
+        prompt += `\n\nTONE OF VOICE: ${aiTone}`;
+        if (aiCustomPrompt.trim()) {
+          prompt += `\n\nADDITIONAL RULES TO STRICTLY FOLLOW:\n${aiCustomPrompt}`;
+        }
         
         const aiResponse = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' + GEMINI_API_KEY, {
           method: 'POST',

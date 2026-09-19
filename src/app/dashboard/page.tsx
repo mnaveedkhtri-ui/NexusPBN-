@@ -104,6 +104,11 @@ export default function Dashboard() {
   const [keys, setKeys] = useState({ geminiKey: '', vercelToken: '', githubToken: '', cloudflareToken: '', cloudflareAccountId: '' });
   const [isSavingKeys, setIsSavingKeys] = useState(false);
 
+  // AI Settings State
+  const [tone, setTone] = useState('Authoritative & Professional');
+  const [customPrompt, setCustomPrompt] = useState('');
+  const [isSavingAi, setIsSavingAi] = useState(false);
+
   useEffect(() => {
     if (activeTab === 'settings') {
       fetch('/api/settings')
@@ -111,7 +116,34 @@ export default function Dashboard() {
         .then(data => setKeys({ geminiKey: data.geminiKey, vercelToken: data.vercelToken, githubToken: data.githubToken, cloudflareToken: data.cloudflareToken || '', cloudflareAccountId: data.cloudflareAccountId || '' }))
         .catch(console.error);
     }
+    
+    if (activeTab === 'articles') {
+      fetch('/api/ai-settings')
+        .then(res => res.json())
+        .then(data => {
+          if (data.tone) setTone(data.tone);
+          if (data.customPrompt !== undefined) setCustomPrompt(data.customPrompt);
+        })
+        .catch(console.error);
+    }
   }, [activeTab]);
+
+  const handleSaveAiSettings = async () => {
+    setIsSavingAi(true);
+    try {
+      const res = await fetch('/api/ai-settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tone, customPrompt })
+      });
+      if (res.ok) alert('AI Persona Settings saved to Database!');
+      else alert('Failed to save AI settings');
+    } catch (e) {
+      alert('Error saving AI settings');
+    } finally {
+      setIsSavingAi(false);
+    }
+  };
 
   const handleUpdateKeys = async () => {
     setIsSavingKeys(true);
@@ -491,7 +523,11 @@ export default function Dashboard() {
                   <div className="space-y-4">
                     <div>
                       <label className="block text-sm text-[#888] mb-2">Content Tone</label>
-                      <select className="w-full bg-[#0a0a0a] border border-[#262626] rounded-md px-4 py-2 text-white focus:outline-none focus:border-blue-500">
+                      <select 
+                        value={tone}
+                        onChange={(e) => setTone(e.target.value)}
+                        className="w-full bg-[#0a0a0a] border border-[#262626] rounded-md px-4 py-2 text-white focus:outline-none focus:border-blue-500"
+                      >
                         <option>Authoritative & Professional</option>
                         <option>Conversational & Engaging</option>
                         <option>Aggressive Sales</option>
@@ -499,9 +535,20 @@ export default function Dashboard() {
                     </div>
                     <div>
                       <label className="block text-sm text-[#888] mb-2">Custom Prompt Instructions (Optional)</label>
-                      <textarea className="w-full bg-[#0a0a0a] border border-[#262626] rounded-md px-4 py-3 text-white h-32 focus:outline-none focus:border-blue-500" placeholder="e.g. Always include a bulleted list at the end..."></textarea>
+                      <textarea 
+                        value={customPrompt}
+                        onChange={(e) => setCustomPrompt(e.target.value)}
+                        className="w-full bg-[#0a0a0a] border border-[#262626] rounded-md px-4 py-3 text-white h-32 focus:outline-none focus:border-blue-500" 
+                        placeholder="e.g. Always include a bulleted list at the end..."
+                      ></textarea>
                     </div>
-                    <button className="bg-white text-black px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-200">Save Persona Settings</button>
+                    <button 
+                      onClick={handleSaveAiSettings}
+                      disabled={isSavingAi}
+                      className="bg-white text-black px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-200 disabled:opacity-50"
+                    >
+                      {isSavingAi ? 'Saving...' : 'Save Persona Settings'}
+                    </button>
                   </div>
                 </div>
               </div>
