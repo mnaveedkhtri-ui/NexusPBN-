@@ -15,6 +15,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "NexusPBN | Premium SEO Automation",
   description: "Enterprise AI-powered PBN deployments and SEO footprint management.",
+  verification: {
+    google: "XKqDOIporTLwhEyizWES5BzLGewgVKX3ymxqUbKwjvE",
+  },
 };
 
 export default function RootLayout({
