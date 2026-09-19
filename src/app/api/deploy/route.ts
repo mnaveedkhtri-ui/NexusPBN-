@@ -66,7 +66,7 @@ export async function POST(request: Request) {
     }
 
     const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
-    const fallbackModels = ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-1.5-flash-8b'];
+    const fallbackModels = ['gemini-1.5-flash', 'gemini-1.0-pro', 'gemini-1.5-pro', 'gemini-pro'];
     
     let prompt = `Write a massive, 1200+ word highly SEO-optimized, engaging, and professional blog post for a website about "${niche}".
     Format the response strictly in Markdown. 
@@ -97,8 +97,8 @@ export async function POST(request: Request) {
     let success = false;
     let lastError = '';
 
-    // Retry Logic: Try up to 3 times, falling back to lighter models if quota is exceeded
-    for (let attempt = 1; attempt <= 3; attempt++) {
+    // Retry Logic: Try up to 4 times, falling back to lighter models if quota is exceeded
+    for (let attempt = 1; attempt <= 4; attempt++) {
       try {
         if (request.signal.aborted) throw new Error('Deployment canceled by user');
         const currentModelName = fallbackModels[attempt - 1];
@@ -114,16 +114,16 @@ export async function POST(request: Request) {
       } catch (e: any) {
         lastError = e.message;
         console.log(`Attempt ${attempt} failed:`, e.message);
-        if (attempt < 3) {
+        if (attempt < 4) {
           // If it's a quota error, wait 2 seconds and let the loop move to the next model
           await delay(2000); 
         }
       }
     }
 
-    // MASSIVE FALLBACK if all 3 retries fail
+    // MASSIVE FALLBACK if all 4 retries fail
     if (!success) {
-      console.log("All 3 attempts failed. Using massive fallback.");
+      console.log("All 4 attempts failed. Using massive fallback.");
       markdownContent = `## AI Error Debugging\n\n**Error Details:** ${lastError}\n\n---\n\n## The Future of Digital Infrastructure and Automation
       
 Building a reliable online presence takes more than just buying a domain. You need speed, security, and a system that works around the clock without constant maintenance. As technology evolves, smart website owners are moving away from heavy content management systems and adopting streamlined cloud solutions. 
