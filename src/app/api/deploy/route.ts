@@ -207,7 +207,6 @@ The tools required to build a highly profitable digital empire are accessible to
     let articleTitle = anchorText.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
     let aiArticleContent = `${aiArticleContent}`;
 
-    const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
     if (GEMINI_API_KEY) {
       try {
         const prompt = 'Write a 1200-word highly engaging, SEO-optimized blog article about "' + anchorText + '". The main H1 title must be highly relevant to the keyword. Use proper HTML tags (h1, h2, h3, p, strong, ul, li). Do not include html, head, or body tags, just the inner content. Include a natural contextual backlink in the second or third paragraph to "' + moneyUrl + '" using exactly "' + anchorText + '" as the anchor text. Make the content look like a professional magazine article.';
