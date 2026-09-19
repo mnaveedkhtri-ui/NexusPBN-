@@ -25,6 +25,7 @@ export default function Dashboard() {
   const [isDeploying, setIsDeploying] = useState(false);
   
   const [domains, setDomains] = useState<any[]>([]);
+  const [gscMetrics, setGscMetrics] = useState<any>({ totalClicks: 0, totalImpressions: 0, chartData });
 
   useEffect(() => {
     fetch('/api/projects')
@@ -35,6 +36,15 @@ export default function Dashboard() {
         }
       })
       .catch(err => console.error("Failed to fetch projects", err));
+
+    fetch('/api/gsc')
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.chartData) {
+          setGscMetrics(data);
+        }
+      })
+      .catch(err => console.error("Failed to fetch GSC", err));
   }, []);
 
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -307,21 +317,21 @@ export default function Dashboard() {
                 
                 {/* KPI Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                  <KpiCard title="Active Domains" value={domains.length.toString()} change="+0" />
-                  <KpiCard title="Indexed Pages" value="0" change="+0" />
-                  <KpiCard title="Avg. DA" value="0.0" change="+0.0" />
-                  <KpiCard title="Server Costs" value="$0.00" change="+$0.00" />
+                  <KpiCard title="Active PBN Nodes" value={domains.length.toString()} change="+0" />
+                  <KpiCard title="Google Clicks (7d)" value={gscMetrics.totalClicks.toString()} change="+0" />
+                  <KpiCard title="Google Impressions" value={gscMetrics.totalImpressions.toString()} change="+0" />
+                  <KpiCard title="Server Costs" value="$0.00" change="-$0.00" />
                 </div>
 
                 {/* Chart Area */}
                 <div className="mt-8 bg-[#0a0a0a] border border-[#262626] p-6 rounded-xl">
                   <div className="mb-4">
-                    <h3 className="font-semibold">Network Growth</h3>
-                    <p className="text-sm text-[#888]">Link velocity and indexation over time</p>
+                    <h3 className="font-semibold">Search Traffic Analytics</h3>
+                    <p className="text-sm text-[#888]">Google Clicks and Impressions over the last 7 days</p>
                   </div>
                   <div className="h-[300px] w-full">
                     <ResponsiveContainer width="100%" height="100%">
-                      <AreaChart data={chartData} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
+                      <AreaChart data={gscMetrics.chartData} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
                         <defs>
                           <linearGradient id="colorLinks" x1="0" y1="0" x2="0" y2="1">
                             <stop offset="5%" stopColor="#fff" stopOpacity={0.3}/>
@@ -332,7 +342,7 @@ export default function Dashboard() {
                         <XAxis dataKey="name" stroke="#888" fontSize={12} tickLine={false} axisLine={false} />
                         <YAxis stroke="#888" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(val) => `${val}`} />
                         <Tooltip contentStyle={{ backgroundColor: '#171717', borderColor: '#262626', borderRadius: '8px' }} />
-                        <Area type="monotone" dataKey="links" stroke="#fff" fillOpacity={1} fill="url(#colorLinks)" strokeWidth={2} />
+                        <Area type="monotone" dataKey="clicks" stroke="#fff" fillOpacity={1} fill="url(#colorLinks)" strokeWidth={2} />
                       </AreaChart>
                     </ResponsiveContainer>
                   </div>
