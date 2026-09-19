@@ -264,13 +264,33 @@ The tools required to build a highly profitable digital empire are accessible to
     }
     // -------------------------
 
+    const jsonLd = {
+      "@context": "https://schema.org",
+      "@type": "Article",
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": finalEdgeUrl
+      },
+      "headline": articleTitle,
+      "image": imageUrl,
+      "author": { "@type": "Organization", "name": "Nexus PBN Network" },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Nexus PBN Network",
+        "logo": { "@type": "ImageObject", "url": imageUrl }
+      },
+      "datePublished": new Date().toISOString()
+    };
+
     const htmlFileContent = `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${blogTitle}</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Comprehensive insights and complete guide on ${primaryKeyword}. Learn the best strategies today.">
+    <title>${blogTitle}</title>
+    <script type="application/ld+json">${JSON.stringify(jsonLd)}</script>
+    <script src="https://cdn.tailwindcss.com"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Merriweather:wght@300;400;700&display=swap');
     
@@ -524,6 +544,38 @@ The tools required to build a highly profitable digital empire are accessible to
       body: JSON.stringify({
         message: 'Initial PBN deployment from Nexus',
         content: contentEncoded,
+      }),
+    });
+
+    // 5b. PUSH ROBOTS.TXT
+    const robotsContent = `User-agent: *
+Allow: /
+Sitemap: ${finalEdgeUrl}/sitemap.xml`;
+    await fetch(`https://api.github.com/repos/${githubUsername}/${repoName}/contents/robots.txt`, {
+      method: 'PUT',
+      headers: { 'Authorization': `token ${GITHUB_TOKEN}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        message: 'Add robots.txt',
+        content: Buffer.from(robotsContent).toString('base64'),
+      }),
+    });
+
+    // 5c. PUSH SITEMAP.XML
+    const sitemapContent = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>${finalEdgeUrl}/</loc>
+    <lastmod>${new Date().toISOString()}</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+</urlset>`;
+    await fetch(`https://api.github.com/repos/${githubUsername}/${repoName}/contents/sitemap.xml`, {
+      method: 'PUT',
+      headers: { 'Authorization': `token ${GITHUB_TOKEN}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        message: 'Add sitemap.xml',
+        content: Buffer.from(sitemapContent).toString('base64'),
       }),
     });
 
