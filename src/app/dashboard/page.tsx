@@ -21,6 +21,7 @@ export default function Dashboard() {
   const [provider, setProvider] = useState('vercel');
   const [moneyUrl, setMoneyUrl] = useState('');
   const [anchorText, setAnchorText] = useState('');
+  const [targetKeyword, setTargetKeyword] = useState('');
   const [isDeploying, setIsDeploying] = useState(false);
   
   const [domains, setDomains] = useState<any[]>([]);
@@ -47,7 +48,7 @@ export default function Dashboard() {
       const response = await fetch('/api/deploy', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ domain: newDomain, niche, provider, moneyUrl, anchorText }),
+        body: JSON.stringify({ domain: newDomain, niche, provider, moneyUrl, anchorText, targetKeyword }),
         signal: abortControllerRef.current.signal
       });
 
@@ -163,7 +164,17 @@ export default function Dashboard() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-[#888] mb-1">Anchor Text</label>
+                  <label className="block text-sm font-medium text-[#888] mb-1">Target Keyword (For AI SEO)</label>
+                  <input 
+                    type="text" 
+                    value={targetKeyword}
+                    onChange={(e) => setTargetKeyword(e.target.value)}
+                    placeholder="e.g. how to transfer money from dasherdirect..." 
+                    className="w-full bg-[#171717] border border-[#262626] rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#404040]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-[#888] mb-1">Anchor Text (For Backlink)</label>
                   <input 
                     type="text" 
                     value={anchorText}

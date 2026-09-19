@@ -11,7 +11,7 @@ const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
 
 export async function POST(request: Request) {
   try {
-    const { domain, niche = 'general', provider, moneyUrl = '#', anchorText = 'Click Here' } = await request.json();
+    const { domain, niche = 'general', provider, moneyUrl = '#', anchorText = 'Click Here', targetKeyword = '' } = await request.json();
 
     if (!domain) {
       return NextResponse.json({ error: 'Domain is required' }, { status: 400 });
@@ -204,20 +204,21 @@ The tools required to build a highly profitable digital empire are accessible to
     // 4. GENERATE HTML TEMPLATE WITH EMBEDDED AI CONTENT & FIX TAILWIND LINKS
     
     // --- AI CONTENT ENGINE ---
-    let articleTitle = anchorText.split(' ').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+    const primaryKeyword = targetKeyword.trim() ? targetKeyword : anchorText;
+    let articleTitle = primaryKeyword.split(' ').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
     let aiArticleContent = `<article class="prose prose-slate max-w-none">
             <div class="flex items-center gap-4 mb-8">
               <span class="bg-blue-100 text-blue-700 text-xs font-bold px-3 py-1 uppercase tracking-wider rounded-full">${formattedNiche}</span>
               <span class="text-slate-500 text-sm font-medium">5 min read</span>
             </div>
             <h1 class="text-4xl font-extrabold text-slate-900 mb-6 leading-tight tracking-tight">${articleTitle}</h1>
-            <p class="text-xl text-slate-600 mb-8 leading-relaxed font-medium">Comprehensive insights and complete guide on ${anchorText}.</p>
+            <p class="text-xl text-slate-600 mb-8 leading-relaxed font-medium">Comprehensive insights and complete guide on ${primaryKeyword}.</p>
             <p class="text-lg text-slate-600 mb-6 leading-relaxed">Welcome to our detailed overview. For the best strategies, visit <a href="${moneyUrl}" class="text-blue-600 font-semibold hover:underline">${anchorText}</a>.</p>
           </article>`;
 
     if (GEMINI_API_KEY) {
       try {
-        const prompt = 'Write a 1200-word highly engaging, SEO-optimized blog article about "' + anchorText + '". The main H1 title must be highly relevant to the keyword. Use proper HTML tags (h1, h2, h3, p, strong, ul, li). Do not include html, head, or body tags, just the inner content. Include a natural contextual backlink in the second or third paragraph to "' + moneyUrl + '" using exactly "' + anchorText + '" as the anchor text. Make the content look like a professional magazine article.';
+        const prompt = 'Write a highly engaging, 1500-word GEO and AEO optimized SEO blog article completely focused on the exact primary keyword: "' + primaryKeyword + '". The main H1 title must be highly relevant to this exact keyword. Use proper HTML tags (h1, h2, h3, p, strong, ul, li). Do not include html, head, or body tags, just the inner content. Include a natural contextual backlink in the second or third paragraph to "' + moneyUrl + '" using EXACTLY "' + anchorText + '" as the hyperlink anchor text. Make the content look like a professional magazine article, semantically optimized for featured snippets.';
         
         const aiResponse = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' + GEMINI_API_KEY, {
           method: 'POST',
