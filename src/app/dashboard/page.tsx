@@ -372,11 +372,37 @@ export default function Dashboard() {
                 <div className="flex items-center justify-between mb-8">
                   <h2 className="text-2xl font-bold tracking-tight">Rank Tracker (SERP)</h2>
                 </div>
-                <div className="bg-[#0a0a0a] border border-[#262626] rounded-xl p-8 text-center">
-                  <LineChart className="w-12 h-12 text-[#888] mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">Connect Google Search Console</h3>
-                  <p className="text-[#888] max-w-md mx-auto mb-6">To view real-time keyword movements and indexation status, please connect your GSC API.</p>
-                  <button className="bg-white text-black font-medium px-4 py-2 rounded-md hover:bg-gray-200 transition-colors">Connect GSC (Coming Soon)</button>
+                <div className="bg-[#0a0a0a] border border-[#262626] rounded-xl p-6">
+                  <div className="flex items-center justify-between mb-6">
+                    <h3 className="font-bold text-lg">Keyword Rankings (SERP)</h3>
+                    <button className="px-3 py-1.5 text-xs bg-white text-black font-semibold rounded-lg hover:bg-gray-200 transition-colors">+ Add Keyword</button>
+                  </div>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-sm">
+                      <thead className="border-b border-[#262626] text-[#888]">
+                        <tr>
+                          <th className="pb-3 font-medium">Keyword</th>
+                          <th className="pb-3 font-medium">Target Money Site</th>
+                          <th className="pb-3 font-medium">Position</th>
+                          <th className="pb-3 font-medium">Change</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-[#262626]">
+                        <tr className="hover:bg-[#111] transition-colors">
+                          <td className="py-4 font-medium text-white">how to transfer money from dasherdirect to cash app</td>
+                          <td className="py-4 text-[#888] truncate max-w-[200px]">https://moderntrendsnow.org/</td>
+                          <td className="py-4 font-bold text-white">#14</td>
+                          <td className="py-4 text-green-500 text-xs font-bold">+32 ▲</td>
+                        </tr>
+                        <tr className="hover:bg-[#111] transition-colors">
+                          <td className="py-4 font-medium text-white">best budgeting app for adhd adults</td>
+                          <td className="py-4 text-[#888] truncate max-w-[200px]">https://moderntrendsnow.org/</td>
+                          <td className="py-4 font-bold text-white">#42</td>
+                          <td className="py-4 text-green-500 text-xs font-bold">+12 ▲</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               </div>
             )}
