@@ -49,7 +49,8 @@ export async function POST(request: Request) {
     const cleanDomain = domain.toLowerCase().replace(/[^a-z0-9]/g, '-');
     const suffixes = ['hq', 'daily', 'insights', 'hub', 'blog', 'news', 'update', 'pro', 'guide'];
     const randomSuffix = suffixes[Math.floor(Math.random() * suffixes.length)];
-    const repoName = `${cleanDomain}-${randomSuffix}`;
+    const uniqueId = Math.random().toString(36).substring(2, 7);
+    const repoName = `${cleanDomain}-${randomSuffix}-${uniqueId}`;
 
     // 1. ZIDDI ENGINE - GENERATE CONTENT (Gemini Flash with 3 Retries)
     const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
@@ -159,6 +160,9 @@ The tools required to build a highly profitable digital empire are accessible to
       })
     });
     const repoData = await createRepoRes.json();
+    if (!createRepoRes.ok) {
+      throw new Error('GitHub Repo Creation Failed: ' + JSON.stringify(repoData));
+    }
     const githubUsername = repoData.owner.login;
 
     // 3. CREATE EDGE DEPLOYMENT (Vercel or Cloudflare)
@@ -198,6 +202,11 @@ The tools required to build a highly profitable digital empire are accessible to
           gitRepository: { repo: repoData.full_name, type: 'github' }
         })
       });
+
+      const vercelData = await createVercelRes.json();
+      if (!createVercelRes.ok) {
+        throw new Error('Vercel Project Creation Failed: ' + JSON.stringify(vercelData));
+      }
 
       // Wait 2 seconds for Vercel to fully link the repo
       await new Promise(resolve => setTimeout(resolve, 2000));
