@@ -202,6 +202,41 @@ The tools required to build a highly profitable digital empire are accessible to
     }
 
     // 4. GENERATE HTML TEMPLATE WITH EMBEDDED AI CONTENT & FIX TAILWIND LINKS
+    
+    // --- AI CONTENT ENGINE ---
+    let articleTitle = anchorText.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+    let aiArticleContent = `${aiArticleContent}`;
+
+    const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+    if (GEMINI_API_KEY) {
+      try {
+        const prompt = 'Write a 1200-word highly engaging, SEO-optimized blog article about "' + anchorText + '". The main H1 title must be highly relevant to the keyword. Use proper HTML tags (h1, h2, h3, p, strong, ul, li). Do not include html, head, or body tags, just the inner content. Include a natural contextual backlink in the second or third paragraph to "' + moneyUrl + '" using exactly "' + anchorText + '" as the anchor text. Make the content look like a professional magazine article.';
+        
+        const aiResponse = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' + GEMINI_API_KEY, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }]
+          })
+        });
+        
+        const aiData = await aiResponse.json();
+        if (aiData.candidates && aiData.candidates[0].content.parts[0].text) {
+           let cleanedHtml = aiData.candidates[0].content.parts[0].text.replace(/```html/g, '').replace(/```/g, '');
+           aiArticleContent = `<article class="prose prose-slate max-w-none">
+             <div class="flex items-center gap-4 mb-8">
+               <span class="bg-blue-100 text-blue-700 text-xs font-bold px-3 py-1 uppercase tracking-wider rounded-full">${formattedNiche}</span>
+               <span class="text-slate-500 text-sm font-medium">8 min read</span>
+             </div>
+             ${cleanedHtml}
+           </article>`;
+        }
+      } catch (err) {
+        console.error('AI Generation Failed:', err);
+      }
+    }
+    // -------------------------
+
     const htmlFileContent = `<!DOCTYPE html>
 <html lang="en">
 <head>
