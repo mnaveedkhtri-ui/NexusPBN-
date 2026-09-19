@@ -205,6 +205,15 @@ The tools required to build a highly profitable digital empire are accessible to
     
     // --- AI CONTENT ENGINE ---
     let articleTitle = anchorText.split(' ').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+    let aiArticleContent = `<article class="prose prose-slate max-w-none">
+            <div class="flex items-center gap-4 mb-8">
+              <span class="bg-blue-100 text-blue-700 text-xs font-bold px-3 py-1 uppercase tracking-wider rounded-full">${formattedNiche}</span>
+              <span class="text-slate-500 text-sm font-medium">5 min read</span>
+            </div>
+            <h1 class="text-4xl font-extrabold text-slate-900 mb-6 leading-tight tracking-tight">${articleTitle}</h1>
+            <p class="text-xl text-slate-600 mb-8 leading-relaxed font-medium">Comprehensive insights and complete guide on ${anchorText}.</p>
+            <p class="text-lg text-slate-600 mb-6 leading-relaxed">Welcome to our detailed overview. For the best strategies, visit <a href="${moneyUrl}" class="text-blue-600 font-semibold hover:underline">${anchorText}</a>.</p>
+          </article>`;
 
     if (GEMINI_API_KEY) {
       try {
