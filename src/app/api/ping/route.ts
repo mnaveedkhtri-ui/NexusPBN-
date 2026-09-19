@@ -19,13 +19,11 @@ export async function POST(request: Request) {
     let googleStatus = 'skipped';
     if (clientEmail && privateKey) {
       try {
-        const jwtClient = new google.auth.JWT(
-          clientEmail,
-          undefined,
-          privateKey,
-          ['https://www.googleapis.com/auth/indexing'],
-          undefined
-        );
+        const jwtClient = new google.auth.JWT({
+          email: clientEmail,
+          key: privateKey,
+          scopes: ['https://www.googleapis.com/auth/indexing'],
+        });
         
         await jwtClient.authorize();
         
