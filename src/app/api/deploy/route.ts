@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import sql, { initDB } from '@/lib/db';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { marked } from 'marked';
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/authOptions";
 
 // Helper function to generate unique ID
 const generateId = () => Math.random().toString(36).substring(2, 15);
@@ -11,20 +13,34 @@ const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
 
 export async function POST(request: Request) {
   try {
+    const session = await getServerSession(authOptions);
+    if (!session || !session.user?.email) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    const userEmail = session.user.email;
+
     const { domain, niche = 'general', provider, moneyUrl = '#', anchorText = 'Click Here', targetKeyword = '' } = await request.json();
 
     if (!domain) {
       return NextResponse.json({ error: 'Domain is required' }, { status: 400 });
     }
 
-    const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
-    const VERCEL_TOKEN = process.env.VERCEL_TOKEN;
-    const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-    const CLOUDFLARE_TOKEN = process.env.CLOUDFLARE_TOKEN;
-    const CLOUDFLARE_ACCOUNT_ID = process.env.CLOUDFLARE_ACCOUNT_ID;
+    await initDB();
+    const keysRes = await sql`SELECT * FROM api_keys WHERE user_email = ${userEmail} LIMIT 1`;
+    if (keysRes.rows.length === 0) return NextResponse.json({ error: "API Keys not configured. Please save them in Settings." }, { status: 400 });
+    
+    const userKeys = keysRes.rows[0];
+    const GEMINI_API_KEY = userKeys.gemini_key;
+    const GITHUB_TOKEN = userKeys.github_token;
+    const VERCEL_TOKEN = userKeys.vercel_token;
+    const CLOUDFLARE_TOKEN = userKeys.cloudflare_token;
+    const CLOUDFLARE_ACCOUNT_ID = userKeys.cloudflare_account_id;
+    
+    // We don't have team IDs yet, assume empty or null
+    const VERCEL_TEAM_ID = '';
 
-    if (!GITHUB_TOKEN || !VERCEL_TOKEN || !GEMINI_API_KEY) {
-      return NextResponse.json({ error: 'API Tokens missing in .env.local' }, { status: 400 });
+    if (!GEMINI_API_KEY || !GITHUB_TOKEN || !VERCEL_TOKEN) {
+      return NextResponse.json({ error: 'Missing required API keys in Settings. (Gemini, GitHub, Vercel)' }, { status: 400 });
     }
 
     // Clean up domain and add professional SEO suffixes instead of spammy numbers
@@ -207,7 +223,7 @@ The tools required to build a highly profitable digital empire are accessible to
     let aiTone = 'Authoritative & Professional';
     let aiCustomPrompt = '';
     try {
-      const dbRes = await sql`SELECT tone, custom_prompt FROM ai_settings WHERE id = 'global' LIMIT 1`;
+      const dbRes = await sql`SELECT tone, custom_prompt FROM ai_settings WHERE user_email = ${userEmail} LIMIT 1`;
       if (dbRes.rows.length > 0) {
         aiTone = dbRes.rows[0].tone || aiTone;
         aiCustomPrompt = dbRes.rows[0].custom_prompt || '';
@@ -594,8 +610,8 @@ Sitemap: ${finalEdgeUrl}/sitemap.xml`;
     try { await initDB(); } catch(e) {}
     
     await sql`
-      INSERT INTO projects (id, domain, moneyUrl, anchorText, vercelUrl, githubRepo) 
-      VALUES (${projectId}, ${domain}, ${moneyUrl}, ${anchorText}, ${finalEdgeUrl}, ${repoName})
+      INSERT INTO projects (id, user_email, domain, moneyUrl, anchorText, vercelUrl, githubRepo) 
+      VALUES (${projectId}, ${userEmail}, ${domain}, ${moneyUrl}, ${anchorText}, ${finalEdgeUrl}, ${repoName})
     `;
 
     return NextResponse.json({ 

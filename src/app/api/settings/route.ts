@@ -1,10 +1,8 @@
 import { NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
+import { sql } from '@vercel/postgres';
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/authOptions";
 
-const envPath = path.join(process.cwd(), '.env.local');
-
-// Helper to mask keys for the frontend
 const maskKey = (key: string | undefined) => {
   if (!key) return '';
   if (key.length <= 8) return '••••••••';
@@ -12,80 +10,64 @@ const maskKey = (key: string | undefined) => {
 };
 
 export async function GET() {
-  // Read current env file to ensure we have the latest
-  let envContent = '';
   try {
-    envContent = fs.readFileSync(envPath, 'utf8');
-  } catch (err) {
-    // File doesn't exist
-  }
+    const session = await getServerSession(authOptions);
+    if (!session || !session.user?.email) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const userEmail = session.user.email;
 
-  // Parse env
-  const parsedEnv: any = {};
-  envContent.split('\n').forEach(line => {
-    const match = line.match(/^([^=]+)=(.*)$/);
-    if (match) {
-      parsedEnv[match[1].trim()] = match[2].trim();
+    const { rows } = await sql`SELECT * FROM api_keys WHERE user_email = ${userEmail} LIMIT 1`;
+    
+    if (rows.length > 0) {
+      const keys = rows[0];
+      return NextResponse.json({
+        geminiKey: maskKey(keys.gemini_key),
+        vercelToken: maskKey(keys.vercel_token),
+        githubToken: maskKey(keys.github_token),
+        cloudflareToken: maskKey(keys.cloudflare_token),
+        cloudflareAccountId: maskKey(keys.cloudflare_account_id),
+      });
     }
-  });
 
-  return NextResponse.json({
-    geminiKey: maskKey(parsedEnv.GEMINI_API_KEY || process.env.GEMINI_API_KEY),
-    vercelToken: maskKey(parsedEnv.VERCEL_TOKEN || process.env.VERCEL_TOKEN),
-    githubToken: maskKey(parsedEnv.GITHUB_TOKEN || process.env.GITHUB_TOKEN),
-    cloudflareToken: maskKey(parsedEnv.CLOUDFLARE_TOKEN || process.env.CLOUDFLARE_TOKEN),
-    cloudflareAccountId: maskKey(parsedEnv.CLOUDFLARE_ACCOUNT_ID || process.env.CLOUDFLARE_ACCOUNT_ID),
-  });
+    return NextResponse.json({
+      geminiKey: '', vercelToken: '', githubToken: '', cloudflareToken: '', cloudflareAccountId: ''
+    });
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
 }
 
 export async function POST(request: Request) {
   try {
+    const session = await getServerSession(authOptions);
+    if (!session || !session.user?.email) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const userEmail = session.user.email;
+
     const body = await request.json();
     const { geminiKey, vercelToken, githubToken, cloudflareToken, cloudflareAccountId } = body;
 
-    let envContent = '';
-    try {
-      envContent = fs.readFileSync(envPath, 'utf8');
-    } catch (err) {}
+    // Fetch existing so we don't overwrite with masked string
+    const { rows } = await sql`SELECT * FROM api_keys WHERE user_email = ${userEmail} LIMIT 1`;
+    const existing = rows.length > 0 ? rows[0] : {};
 
-    const parsedEnv: any = {};
-    envContent.split('\n').forEach(line => {
-      const match = line.match(/^([^=]+)=(.*)$/);
-      if (match) {
-        parsedEnv[match[1].trim()] = match[2].trim();
-      }
-    });
+    const finalGemini = (geminiKey && !geminiKey.includes('•')) ? geminiKey : existing.gemini_key || '';
+    const finalVercel = (vercelToken && !vercelToken.includes('•')) ? vercelToken : existing.vercel_token || '';
+    const finalGithub = (githubToken && !githubToken.includes('•')) ? githubToken : existing.github_token || '';
+    const finalCloudflareToken = (cloudflareToken && !cloudflareToken.includes('•')) ? cloudflareToken : existing.cloudflare_token || '';
+    const finalCloudflareAccountId = (cloudflareAccountId && !cloudflareAccountId.includes('•')) ? cloudflareAccountId : existing.cloudflare_account_id || '';
 
-    // Only update if the user provided a real new key (not the masked version)
-    if (geminiKey && !geminiKey.includes('••••')) {
-      parsedEnv.GEMINI_API_KEY = geminiKey;
-      process.env.GEMINI_API_KEY = geminiKey;
-    }
-    if (vercelToken && !vercelToken.includes('••••')) {
-      parsedEnv.VERCEL_TOKEN = vercelToken;
-      process.env.VERCEL_TOKEN = vercelToken;
-    }
-    if (githubToken && !githubToken.includes('••••')) {
-      parsedEnv.GITHUB_TOKEN = githubToken;
-      process.env.GITHUB_TOKEN = githubToken;
-    }
-    if (cloudflareToken && !cloudflareToken.includes('••••')) {
-      parsedEnv.CLOUDFLARE_TOKEN = cloudflareToken;
-      process.env.CLOUDFLARE_TOKEN = cloudflareToken;
-    }
-    if (cloudflareAccountId && !cloudflareAccountId.includes('••••')) {
-      parsedEnv.CLOUDFLARE_ACCOUNT_ID = cloudflareAccountId;
-      process.env.CLOUDFLARE_ACCOUNT_ID = cloudflareAccountId;
-    }
+    await sql`
+      INSERT INTO api_keys (user_email, gemini_key, vercel_token, github_token, cloudflare_token, cloudflare_account_id)
+      VALUES (${userEmail}, ${finalGemini}, ${finalVercel}, ${finalGithub}, ${finalCloudflareToken}, ${finalCloudflareAccountId})
+      ON CONFLICT (user_email) DO UPDATE 
+      SET gemini_key = EXCLUDED.gemini_key,
+          vercel_token = EXCLUDED.vercel_token,
+          github_token = EXCLUDED.github_token,
+          cloudflare_token = EXCLUDED.cloudflare_token,
+          cloudflare_account_id = EXCLUDED.cloudflare_account_id,
+          updated_at = CURRENT_TIMESTAMP;
+    `;
 
-    // Write back to .env.local
-    const newEnvContent = Object.keys(parsedEnv)
-      .map(key => `${key}=${parsedEnv[key]}`)
-      .join('\n');
-    
-    fs.writeFileSync(envPath, newEnvContent);
-
-    return NextResponse.json({ success: true, message: "API Keys updated successfully!" });
+    return NextResponse.json({ success: true, message: "API Keys saved securely to database!" });
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
