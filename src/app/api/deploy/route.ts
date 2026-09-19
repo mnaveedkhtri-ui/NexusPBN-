@@ -124,11 +124,7 @@ The tools required to build a highly profitable digital empire are accessible to
     // Convert Markdown to HTML
     const htmlArticleContent = await marked(markdownContent);
     
-    // Dynamic Title and Main Image based on Niche
     const formattedNiche = niche.charAt(0).toUpperCase() + niche.slice(1);
-    const blogTitle = `The Ultimate Guide to ${formattedNiche} on ${domain}`;
-    const imageUrl = `https://loremflickr.com/1600/900/${encodeURIComponent(niche).replace(/%20/g, ',')},business/all?random=3`;
-
     // 2. CREATE GITHUB REPOSITORY
     if (request.signal.aborted) throw new Error('Deployment canceled by user before GitHub');
     const createRepoRes = await fetch('https://api.github.com/user/repos', {
@@ -262,6 +258,22 @@ The tools required to build a highly profitable digital empire are accessible to
         console.error('AI Generation Failed:', err);
       }
     }
+//     const formattedNiche = niche.charAt(0).toUpperCase() + niche.slice(1);
+    
+    // SEO STRICT LIMITS: Title under 70 chars, Meta Description under 155 chars
+    let seoTitle = articleTitle;
+    if (seoTitle.length > 65) {
+      seoTitle = seoTitle.substring(0, 62).trim() + '...';
+    }
+    const blogTitle = seoTitle;
+    
+    let metaDesc = `Comprehensive insights and complete guide on ${primaryKeyword}. Learn the best strategies today.`;
+    if (metaDesc.length > 150) {
+      metaDesc = metaDesc.substring(0, 147).trim() + '...';
+    }
+
+    const imageUrl = `https://loremflickr.com/1600/900/${encodeURIComponent(niche).replace(/%20/g, ',')},business/all?random=3`;
+
     // -------------------------
 
     const jsonLd = {
@@ -271,7 +283,7 @@ The tools required to build a highly profitable digital empire are accessible to
         "@type": "WebPage",
         "@id": finalEdgeUrl
       },
-      "headline": articleTitle,
+      "headline": seoTitle,
       "image": imageUrl,
       "author": { "@type": "Organization", "name": "Nexus PBN Network" },
       "publisher": {
@@ -287,7 +299,7 @@ The tools required to build a highly profitable digital empire are accessible to
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Comprehensive insights and complete guide on ${primaryKeyword}. Learn the best strategies today.">
+    <meta name="description" content="${metaDesc}">
     <title>${blogTitle}</title>
     <script type="application/ld+json">${JSON.stringify(jsonLd)}</script>
     <script src="https://cdn.tailwindcss.com"></script>
