@@ -5,7 +5,8 @@ import { marked } from 'marked';
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 
-export const maxDuration = 60; // Allow Vercel to run up to 60 seconds
+export const runtime = "edge";
+export const maxDuration = 60;
 
 // Helper function to generate unique ID
 const generateId = () => Math.random().toString(36).substring(2, 15);
