@@ -467,19 +467,12 @@ The tools required to build a highly profitable digital empire are accessible to
 
     // 4. Save to Database
     const projectId = generateId();
-    const insert = db.prepare(`
-      INSERT INTO projects (id, domain, moneyUrl, anchorText, vercelUrl, githubRepo) 
-      VALUES (?, ?, ?, ?, ?, ?)
-    `);
+    try { await initDB(); } catch(e) {}
     
-    insert.run(
-      projectId, 
-      domain, 
-      moneyUrl, 
-      anchorText, 
-      finalVercelUrl, 
-      repoName
-    );
+    await sql`
+      INSERT INTO projects (id, domain, moneyUrl, anchorText, vercelUrl, githubRepo) 
+      VALUES (${projectId}, ${domain}, ${moneyUrl}, ${anchorText}, ${finalEdgeUrl}, ${repoName})
+    `;
 
     return NextResponse.json({ 
       success: true, 
