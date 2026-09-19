@@ -23,6 +23,9 @@ export async function POST(request: Request) {
 
     const { domain, niche = 'general', provider, moneyUrl = '#', anchorText = 'Click Here', targetKeyword = '' } = await request.json();
 
+    const primaryKeyword = targetKeyword.trim() ? targetKeyword : anchorText;
+    let articleTitle = primaryKeyword.split(' ').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+
     if (!domain) {
       return NextResponse.json({ error: 'Domain is required' }, { status: 400 });
     }
@@ -259,8 +262,6 @@ A: Search engines heavily reward fast, secure websites. Moving to a modern stack
     // 4. GENERATE HTML TEMPLATE WITH EMBEDDED AI CONTENT & FIX TAILWIND LINKS
     
     // --- AI CONTENT ENGINE ---
-    const primaryKeyword = targetKeyword.trim() ? targetKeyword : anchorText;
-    let articleTitle = primaryKeyword.split(' ').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
     
 
 
