@@ -592,36 +592,44 @@ Sitemap: ${finalEdgeUrl}/sitemap.xml`;
   </url>
 </urlset>`;
 
-    // 5. PUSH ALL FILES TO GITHUB IN PARALLEL (Saves 10 seconds!)
-    await Promise.all([
-      fetch(`https://api.github.com/repos/${githubUsername}/${repoName}/contents/index.html`, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `token ${GITHUB_TOKEN}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          message: 'Initial PBN deployment from Nexus',
-          content: contentEncoded,
-        }),
+    // 5. PUSH FILE TO GITHUB (This will trigger Vercel to build!)
+    await fetch(`https://api.github.com/repos/${githubUsername}/${repoName}/contents/index.html`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `token ${GITHUB_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        message: 'Initial PBN deployment from Nexus',
+        content: contentEncoded,
       }),
-      fetch(`https://api.github.com/repos/${githubUsername}/${repoName}/contents/robots.txt`, {
-        method: 'PUT',
-        headers: { 'Authorization': `token ${GITHUB_TOKEN}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          message: 'Add robots.txt',
-          content: Buffer.from(robotsContent).toString('base64'),
-        }),
+    });
+
+    // Wait 1 second to avoid GitHub Git Tree lock issues
+    await new Promise(r => setTimeout(r, 1000));
+
+    // 5b. PUSH ROBOTS.TXT
+    await fetch(`https://api.github.com/repos/${githubUsername}/${repoName}/contents/robots.txt`, {
+      method: 'PUT',
+      headers: { 'Authorization': `token ${GITHUB_TOKEN}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        message: 'Add robots.txt',
+        content: Buffer.from(robotsContent).toString('base64'),
       }),
-      fetch(`https://api.github.com/repos/${githubUsername}/${repoName}/contents/sitemap.xml`, {
-        method: 'PUT',
-        headers: { 'Authorization': `token ${GITHUB_TOKEN}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          message: 'Add sitemap.xml',
-          content: Buffer.from(sitemapContent).toString('base64'),
-        }),
-      })
-    ]);
+    });
+
+    // Wait 1 second
+    await new Promise(r => setTimeout(r, 1000));
+
+    // 5c. PUSH SITEMAP.XML
+    await fetch(`https://api.github.com/repos/${githubUsername}/${repoName}/contents/sitemap.xml`, {
+      method: 'PUT',
+      headers: { 'Authorization': `token ${GITHUB_TOKEN}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        message: 'Add sitemap.xml',
+        content: Buffer.from(sitemapContent).toString('base64'),
+      }),
+    });
 
     // 4. Save to Database
     const projectId = generateId();
