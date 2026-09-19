@@ -232,7 +232,7 @@ The tools required to build a highly profitable digital empire are accessible to
 
     if (GEMINI_API_KEY) {
       try {
-        let prompt = `Write a highly engaging, 1500-word GEO and AEO optimized SEO blog article completely focused on the exact primary keyword: "${primaryKeyword}". The main H1 title must be highly relevant to this exact keyword. Use proper HTML tags (h1, h2, h3, p, strong, ul, li). Do not include html, head, or body tags, just the inner content. Include a natural contextual backlink in the second or third paragraph to "${moneyUrl}" using EXACTLY "${anchorText}" as the hyperlink anchor text. Make the content look like a professional magazine article, semantically optimized for featured snippets.`;
+        let prompt = `Write a highly engaging, comprehensive GEO and AEO optimized SEO blog article completely focused on the exact primary keyword: "${primaryKeyword}". The main H1 title must be highly relevant to this exact keyword. Use proper HTML tags (h1, h2, h3, p, strong, ul, li). Do not include html, head, or body tags, just the inner content. Include a natural contextual backlink in the second or third paragraph to "${moneyUrl}" using EXACTLY "${anchorText}" as the hyperlink anchor text. Make the content look like a professional magazine article, semantically optimized for featured snippets.`;
         
         prompt += `\n\nTONE OF VOICE: ${aiTone}`;
         if (aiCustomPrompt.trim()) {
