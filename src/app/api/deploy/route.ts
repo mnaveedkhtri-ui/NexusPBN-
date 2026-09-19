@@ -5,6 +5,8 @@ import { marked } from 'marked';
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 
+export const maxDuration = 60; // Allow Vercel to run up to 60 seconds
+
 // Helper function to generate unique ID
 const generateId = () => Math.random().toString(36).substring(2, 15);
 
@@ -264,12 +266,17 @@ Also, embed exactly 2 high-quality images inside the body of the article using t
         });
         
         const aiData = await aiResponse.json();
-        if (aiData.candidates && aiData.candidates[0].content.parts[0].text) {
+        if (aiData.candidates && aiData.candidates[0]?.content?.parts?.[0]?.text) {
            let cleanedHtml = aiData.candidates[0].content.parts[0].text.replace(/```html/g, '').replace(/```/g, '');
            aiArticleContent = cleanedHtml;
+        } else {
+           console.error('AI Generation Failed or Blocked:', JSON.stringify(aiData, null, 2));
+           // Fallback to error message string in UI so user knows!
+           aiArticleContent = `<div class="p-4 bg-red-50 text-red-700"><b>AI Error:</b> Failed to generate content. Please check Vercel Logs. Details: ${aiData?.error?.message || 'Unknown Safety Block'}</div>` + aiArticleContent;
         }
-      } catch (err) {
-        console.error('AI Generation Failed:', err);
+      } catch (err: any) {
+        console.error('AI Generation Threw Exception:', err);
+        aiArticleContent = `<div class="p-4 bg-red-50 text-red-700"><b>AI Timeout/Exception:</b> ${err.message}. (Set Vercel maxDuration)</div>` + aiArticleContent;
       }
     }
 //     const formattedNiche = niche.charAt(0).toUpperCase() + niche.slice(1);
