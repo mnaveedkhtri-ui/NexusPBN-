@@ -65,9 +65,8 @@ export async function POST(request: Request) {
       console.log('Could not fetch AI Settings:', err);
     }
 
-    // 1. ZIDDI ENGINE - GENERATE CONTENT (Gemini Flash with 3 Retries)
     const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
-    const model = genAI.getGenerativeModel({ model: "gemini-3.6-flash" });
+    const fallbackModels = ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-1.5-flash-8b'];
     
     let prompt = `Write a massive, 1200+ word highly SEO-optimized, engaging, and professional blog post for a website about "${niche}".
     Format the response strictly in Markdown. 
@@ -98,22 +97,26 @@ export async function POST(request: Request) {
     let success = false;
     let lastError = '';
 
-    // Retry Logic: Try up to 3 times
+    // Retry Logic: Try up to 3 times, falling back to lighter models if quota is exceeded
     for (let attempt = 1; attempt <= 3; attempt++) {
       try {
         if (request.signal.aborted) throw new Error('Deployment canceled by user');
-        console.log(`Gemini Attempt ${attempt}...`);
+        const currentModelName = fallbackModels[attempt - 1];
+        console.log(`Gemini Attempt ${attempt} using ${currentModelName}...`);
+        
+        const model = genAI.getGenerativeModel({ model: currentModelName });
         const result = await model.generateContent(prompt);
         markdownContent = result.response.text();
         
         success = true;
-        console.log(`Gemini succeeded on attempt ${attempt}!`);
+        console.log(`Gemini succeeded on attempt ${attempt} with ${currentModelName}!`);
         break; // Exit loop if successful
       } catch (e: any) {
         lastError = e.message;
         console.log(`Attempt ${attempt} failed:`, e.message);
         if (attempt < 3) {
-          await delay(8000); // Wait 8 seconds before retrying (rate limit recovery)
+          // If it's a quota error, wait 2 seconds and let the loop move to the next model
+          await delay(2000); 
         }
       }
     }
