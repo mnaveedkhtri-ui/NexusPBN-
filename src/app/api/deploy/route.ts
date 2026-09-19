@@ -243,7 +243,7 @@ The tools required to build a highly profitable digital empire are accessible to
       console.log('Could not fetch AI Settings:', err);
     }
 
-    let aiArticleContent = `<article class="prose prose-slate max-w-none">
+    let finalArticleHtml = `<article class="prose prose-slate max-w-none">
             <div class="flex items-center gap-4 mb-8">
               <span class="bg-blue-100 text-blue-700 text-xs font-bold px-3 py-1 uppercase tracking-wider rounded-full">${formattedNiche}</span>
               <span class="text-slate-500 text-sm font-medium">5 min read</span>
@@ -251,44 +251,8 @@ The tools required to build a highly profitable digital empire are accessible to
             <h1 class="text-4xl font-extrabold text-slate-900 mb-6 leading-tight tracking-tight">${articleTitle}</h1>
             <p class="text-xl text-slate-600 mb-8 leading-relaxed font-medium">Comprehensive insights and complete guide on ${primaryKeyword}.</p>
             <p class="text-lg text-slate-600 mb-6 leading-relaxed">Welcome to our detailed overview. For the best strategies, visit <a href="${moneyUrl}" class="text-blue-600 font-semibold hover:underline">${anchorText}</a>.</p>
+            ${htmlArticleContent}
           </article>`;
-
-    if (GEMINI_API_KEY) {
-      try {
-        let prompt = `Write a highly engaging, comprehensive GEO and AEO optimized SEO blog article completely focused on the exact primary keyword: "${primaryKeyword}". The main H1 title must be highly relevant to this exact keyword. Use proper HTML tags (h1, h2, h3, p, strong, ul, li). Do not include html, head, or body tags, just the inner content. Include a natural contextual backlink in the second or third paragraph to "${moneyUrl}" using EXACTLY "${anchorText}" as the hyperlink anchor text. Make the content look like a professional magazine article, semantically optimized for featured snippets.
-        
-Also, embed exactly 2 high-quality images inside the body of the article using these exact HTML tags:
-<img src="https://loremflickr.com/1600/900/${encodeURIComponent(niche).replace(/%20/g, ',')},business/all?random=1" alt="${niche} Image 1" class="w-full rounded-2xl my-8 shadow-md" />
-<img src="https://loremflickr.com/1600/900/${encodeURIComponent(niche).replace(/%20/g, ',')},business/all?random=2" alt="${niche} Image 2" class="w-full rounded-2xl my-8 shadow-md" />`;
-        
-        prompt += `\n\nTONE OF VOICE: ${aiTone}`;
-        if (aiCustomPrompt.trim()) {
-          prompt += `\n\nADDITIONAL RULES TO STRICTLY FOLLOW:\n${aiCustomPrompt}`;
-        }
-        
-        const aiResponse = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=' + GEMINI_API_KEY, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: prompt }] }]
-          })
-        });
-        
-        const aiData = await aiResponse.json();
-        if (aiData.candidates && aiData.candidates[0]?.content?.parts?.[0]?.text) {
-           let cleanedHtml = aiData.candidates[0].content.parts[0].text.replace(/```html/g, '').replace(/```/g, '');
-           aiArticleContent = cleanedHtml;
-        } else {
-           console.error('AI Generation Failed or Blocked:', JSON.stringify(aiData, null, 2));
-           // Fallback to error message string in UI so user knows!
-           aiArticleContent = `<div class="p-4 bg-red-50 text-red-700"><b>AI Error:</b> Failed to generate content. Please check Vercel Logs. Details: ${aiData?.error?.message || 'Unknown Safety Block'}</div>` + aiArticleContent;
-        }
-      } catch (err: any) {
-        console.error('AI Generation Threw Exception:', err);
-        aiArticleContent = `<div class="p-4 bg-red-50 text-red-700"><b>AI Timeout/Exception:</b> ${err.message}. (Set Vercel maxDuration)</div>` + aiArticleContent;
-      }
-    }
-//     const formattedNiche = niche.charAt(0).toUpperCase() + niche.slice(1);
     
     // SEO STRICT LIMITS: Title under 70 chars, Meta Description under 155 chars
     let seoTitle = articleTitle;
@@ -450,7 +414,7 @@ Also, embed exactly 2 high-quality images inside the body of the article using t
 
           <!-- Article Content (Merriweather) -->
           <div class="article-body pbn-content">
-            ${aiArticleContent}
+            ${finalArticleHtml}
           </div>
         </article>
         
