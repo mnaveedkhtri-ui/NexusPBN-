@@ -566,7 +566,7 @@ export default function Dashboard() {
                     <div>
                       <label className="block text-sm font-medium text-[#ccc] mb-2">Gemini API Key</label>
                       <input type="text" value={keys.geminiKey} onChange={e => setKeys({...keys, geminiKey: e.target.value})} className="w-full bg-[#0a0a0a] border border-[#262626] rounded-md px-4 py-2 text-white focus:outline-none focus:border-blue-500" />
-                      <p className="text-xs text-[#888] mt-2">Used for AI Content Engine. Powered by Gemini 1.5 Flash.</p>
+                      <p className="text-xs text-[#888] mt-2">Used for AI Content Engine. Powered by Gemini 3.1 Pro.</p>
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-[#ccc] mb-2">Vercel Access Token</label>
