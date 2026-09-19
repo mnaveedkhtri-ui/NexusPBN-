@@ -228,7 +228,11 @@ The tools required to build a highly profitable digital empire are accessible to
 
     if (GEMINI_API_KEY) {
       try {
-        let prompt = `Write a highly engaging, comprehensive GEO and AEO optimized SEO blog article completely focused on the exact primary keyword: "${primaryKeyword}". The main H1 title must be highly relevant to this exact keyword. Use proper HTML tags (h1, h2, h3, p, strong, ul, li). Do not include html, head, or body tags, just the inner content. Include a natural contextual backlink in the second or third paragraph to "${moneyUrl}" using EXACTLY "${anchorText}" as the hyperlink anchor text. Make the content look like a professional magazine article, semantically optimized for featured snippets.`;
+        let prompt = `Write a highly engaging, comprehensive GEO and AEO optimized SEO blog article completely focused on the exact primary keyword: "${primaryKeyword}". The main H1 title must be highly relevant to this exact keyword. Use proper HTML tags (h1, h2, h3, p, strong, ul, li). Do not include html, head, or body tags, just the inner content. Include a natural contextual backlink in the second or third paragraph to "${moneyUrl}" using EXACTLY "${anchorText}" as the hyperlink anchor text. Make the content look like a professional magazine article, semantically optimized for featured snippets.
+        
+Also, embed exactly 2 high-quality images inside the body of the article using these exact HTML tags:
+<img src="https://loremflickr.com/1600/900/${encodeURIComponent(niche).replace(/%20/g, ',')},business/all?random=1" alt="${niche} Image 1" class="w-full rounded-2xl my-8 shadow-md" />
+<img src="https://loremflickr.com/1600/900/${encodeURIComponent(niche).replace(/%20/g, ',')},business/all?random=2" alt="${niche} Image 2" class="w-full rounded-2xl my-8 shadow-md" />`;
         
         prompt += `\n\nTONE OF VOICE: ${aiTone}`;
         if (aiCustomPrompt.trim()) {
@@ -246,13 +250,7 @@ The tools required to build a highly profitable digital empire are accessible to
         const aiData = await aiResponse.json();
         if (aiData.candidates && aiData.candidates[0].content.parts[0].text) {
            let cleanedHtml = aiData.candidates[0].content.parts[0].text.replace(/```html/g, '').replace(/```/g, '');
-           aiArticleContent = `<article class="prose prose-slate max-w-none">
-             <div class="flex items-center gap-4 mb-8">
-               <span class="bg-blue-100 text-blue-700 text-xs font-bold px-3 py-1 uppercase tracking-wider rounded-full">${formattedNiche}</span>
-               <span class="text-slate-500 text-sm font-medium">8 min read</span>
-             </div>
-             ${cleanedHtml}
-           </article>`;
+           aiArticleContent = cleanedHtml;
         }
       } catch (err) {
         console.error('AI Generation Failed:', err);
@@ -392,7 +390,7 @@ The tools required to build a highly profitable digital empire are accessible to
           <!-- Article Header -->
           <header class="mb-10">
             <h1 class="text-4xl sm:text-5xl font-extrabold text-slate-900 tracking-tight leading-[1.15] mb-6">
-              ${blogTitle}
+              ${articleTitle}
             </h1>
             
             <div class="flex items-center justify-between py-4 border-y border-slate-200 mb-8">
@@ -420,7 +418,7 @@ The tools required to build a highly profitable digital empire are accessible to
 
           <!-- Article Content (Merriweather) -->
           <div class="article-body pbn-content">
-            ${htmlArticleContent}
+            ${aiArticleContent}
           </div>
         </article>
         
