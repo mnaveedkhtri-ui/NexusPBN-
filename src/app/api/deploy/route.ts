@@ -96,6 +96,7 @@ export async function POST(request: Request) {
 
     let markdownContent = '';
     let success = false;
+    let lastError = '';
 
     // Retry Logic: Try up to 3 times
     for (let attempt = 1; attempt <= 3; attempt++) {
@@ -109,9 +110,10 @@ export async function POST(request: Request) {
         console.log(`Gemini succeeded on attempt ${attempt}!`);
         break; // Exit loop if successful
       } catch (e: any) {
+        lastError = e.message;
         console.log(`Attempt ${attempt} failed:`, e.message);
         if (attempt < 3) {
-          await delay(2000); // Wait 2 seconds before retrying
+          await delay(8000); // Wait 8 seconds before retrying (rate limit recovery)
         }
       }
     }
@@ -119,7 +121,7 @@ export async function POST(request: Request) {
     // MASSIVE FALLBACK if all 3 retries fail
     if (!success) {
       console.log("All 3 attempts failed. Using massive fallback.");
-      markdownContent = `## The Future of Digital Infrastructure and Automation
+      markdownContent = `## AI Error Debugging\n\n**Error Details:** ${lastError}\n\n---\n\n## The Future of Digital Infrastructure and Automation
       
 Building a reliable online presence takes more than just buying a domain. You need speed, security, and a system that works around the clock without constant maintenance. As technology evolves, smart website owners are moving away from heavy content management systems and adopting streamlined cloud solutions. 
 
