@@ -26,17 +26,26 @@ export async function POST(request: Request) {
     const primaryKeyword = targetKeyword.trim() ? targetKeyword : anchorText;
     let articleTitle = primaryKeyword.split(' ').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
 
-    const seed1 = Math.floor(Math.random() * 100000);
-    const seed2 = Math.floor(Math.random() * 100000);
-    const seed3 = Math.floor(Math.random() * 100000);
-
-    // Extract the first word of the niche for a safe, broad search to avoid the "Cat Fallback" on Flickr
-    let safeTag = niche.split(' ')[0].toLowerCase().replace(/[^a-z0-9]/g, '');
-    if (!safeTag || safeTag.length < 2) safeTag = 'technology';
-
-    const img1 = `https://loremflickr.com/1200/630/${safeTag}?lock=${seed1}`;
-    const img2 = `https://loremflickr.com/1200/630/${safeTag}?lock=${seed2}`;
-    const img3 = `https://loremflickr.com/1200/630/${safeTag}?lock=${seed3}`;
+    // 10 High-Quality Unsplash Photo IDs (Tech, Business, Lifestyle, Modern Workspaces)
+    const unsplashIds = [
+      '1498050108023-c5249f4df085', // Laptop typing
+      '1504384308090-c894fdcc538d', // Modern office
+      '1518770660439-4636190af475', // Tech
+      '1486312338219-ce68d2c6f44d', // Desk setup
+      '1522202176988-66273c2fd55f', // Coffee notebook
+      '1434499140098-0d1d522b3117', // Clean workspace
+      '1432888117246-f05915e171f2', // Business meeting
+      '1472851294608-0639dce14e5f', // Minimalist desk
+      '1515378960855-9125b7d022af', // Abstract business
+      '1451187580459-43490279c0fa'  // Digital earth
+    ];
+    
+    // Shuffle and pick 3 unique images for this post
+    const shuffledImgs = [...unsplashIds].sort(() => 0.5 - Math.random());
+    
+    const img1 = `https://images.unsplash.com/photo-${shuffledImgs[0]}?w=1200&h=630&fit=crop&q=80`;
+    const img2 = `https://images.unsplash.com/photo-${shuffledImgs[1]}?w=1200&h=630&fit=crop&q=80`;
+    const img3 = `https://images.unsplash.com/photo-${shuffledImgs[2]}?w=1200&h=630&fit=crop&q=80`;
 
     if (!domain) {
       return NextResponse.json({ error: 'Domain is required' }, { status: 400 });
@@ -192,9 +201,9 @@ A: Search engines heavily reward fast, secure websites. Moving to a modern stack
     
     // --- AI HALLUCINATION FAILSAFES ---
     // 1. Force inject External Link if missing
-    if (!htmlArticleContent.includes('<a ') && moneyUrl !== '#') {
-      console.log("AI missed the HTML anchor tag. Force injecting it at the end.");
-      htmlArticleContent += `\n<p>For more insights on this topic, check out <a href="${moneyUrl}" target="_blank" rel="dofollow" class="text-blue-600 hover:underline">${anchorText}</a>.</p>`;
+    if (!htmlArticleContent.includes(`href="${moneyUrl}"`) && moneyUrl !== '#') {
+      console.log("AI missed the HTML anchor tag for the money URL. Force injecting it at the end.");
+      htmlArticleContent += `\n<p class="mt-8 font-medium">For more insights on this topic, check out <a href="${moneyUrl}" target="_blank" rel="dofollow" class="text-blue-600 hover:underline">${anchorText}</a>.</p>`;
     }
     
     // 2. Force inject Body Images if missing (checks if <img exists)
