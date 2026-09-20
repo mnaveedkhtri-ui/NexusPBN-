@@ -16,22 +16,31 @@ if (!API_KEY) {
   process.exit(1);
 }
 
-const TOPICS = [
-  "Vercel vs Cloudflare for SEO Sites",
-  "Why Traditional Article Spinners are Dead in 2026",
-  "Programmatic SEO Guide for Affiliate Marketers",
-  "Generative Engine Optimization (GEO) Explained",
-  "How to avoid Google's Helpful Content Update Penalties"
-];
-
-const pickRandom = (arr) => arr[Math.floor(Math.random() * arr.length)];
+async function getDeepSEOTopic(apiKey) {
+  console.log("🔍 Performing Deep AI Keyword Research (Ahrefs/Semrush level)...");
+  const prompt = `
+    Act as an elite SEO Keyword Researcher.
+    Our SaaS product is "Nexus PBN Deployer", a tool that automates Jamstack/Vercel static PBNs using Gemini AI.
+    Find ONE highly profitable, low-competition (Low KD), high search intent blog topic or keyword that we can rank for in 2026.
+    Do not use generic topics. Go deep into technical SEO, programmatic SEO, edge hosting, or AI content automation.
+    Return ONLY the blog title, nothing else. No quotes, no intro.
+  `;
+  
+  const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${apiKey}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ contents: [{ role: "user", parts: [{ text: prompt }] }], generationConfig: { temperature: 0.9 } })
+  });
+  const data = await res.json();
+  return data.candidates[0].content.parts[0].text.trim().replace(/["']/g, '');
+}
 
 async function generateBlog() {
-  const topic = pickRandom(TOPICS);
+  const topic = await getDeepSEOTopic(API_KEY);
   const slug = topic.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
   const dateStr = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
 
-  console.log(`🤖 Generating SEO Blog for topic: "${topic}"...`);
+  console.log(`🤖 Deep Research Complete! Now Generating SEO Blog for topic: "${topic}"...`);
 
   const prompt = `
     You are an elite Technical SEO and Next.js expert.
