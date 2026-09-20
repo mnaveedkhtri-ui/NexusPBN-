@@ -30,9 +30,13 @@ export async function POST(request: Request) {
     const seed2 = Math.floor(Math.random() * 100000);
     const seed3 = Math.floor(Math.random() * 100000);
 
-    const img1 = `https://picsum.photos/seed/${seed1}/1200/630`;
-    const img2 = `https://picsum.photos/seed/${seed2}/1200/630`;
-    const img3 = `https://picsum.photos/seed/${seed3}/1200/630`;
+    // Extract the first word of the niche for a safe, broad search to avoid the "Cat Fallback" on Flickr
+    let safeTag = niche.split(' ')[0].toLowerCase().replace(/[^a-z0-9]/g, '');
+    if (!safeTag || safeTag.length < 2) safeTag = 'technology';
+
+    const img1 = `https://loremflickr.com/1200/630/${safeTag}?lock=${seed1}`;
+    const img2 = `https://loremflickr.com/1200/630/${safeTag}?lock=${seed2}`;
+    const img3 = `https://loremflickr.com/1200/630/${safeTag}?lock=${seed3}`;
 
     if (!domain) {
       return NextResponse.json({ error: 'Domain is required' }, { status: 400 });
