@@ -192,9 +192,9 @@ A: Search engines heavily reward fast, secure websites. Moving to a modern stack
     
     // --- AI HALLUCINATION FAILSAFES ---
     // 1. Force inject External Link if missing
-    if (!htmlArticleContent.includes(moneyUrl) && moneyUrl !== '#') {
-      console.log("AI missed the external link. Force injecting it at the end.");
-      htmlArticleContent += `\n<p>For more insights on this topic, check out <a href="${moneyUrl}" target="_blank" rel="dofollow">${anchorText}</a>.</p>`;
+    if (!htmlArticleContent.includes('<a ') && moneyUrl !== '#') {
+      console.log("AI missed the HTML anchor tag. Force injecting it at the end.");
+      htmlArticleContent += `\n<p>For more insights on this topic, check out <a href="${moneyUrl}" target="_blank" rel="dofollow" class="text-blue-600 hover:underline">${anchorText}</a>.</p>`;
     }
     
     // 2. Force inject Body Images if missing (checks if <img exists)
