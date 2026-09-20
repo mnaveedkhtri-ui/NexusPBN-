@@ -16,6 +16,13 @@ export default function LandingPage() {
           </div>
           
           <div className="flex items-center gap-6">
+            <Link href="/blog" className="hidden md:block text-sm font-medium text-[#888] hover:text-white transition-colors">
+              Blog
+            </Link>
+            <Link href="/autoblogging-alternative" className="hidden md:block text-sm font-medium text-[#888] hover:text-white transition-colors">
+              Compare
+            </Link>
+            <div className="hidden md:block w-px h-4 bg-white/10 mx-2"></div>
             <Link href="/login" className="text-sm font-medium text-[#888] hover:text-white transition-colors">
               Sign In
             </Link>
