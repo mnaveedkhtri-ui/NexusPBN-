@@ -26,12 +26,13 @@ async function getDeepSEOTopic(apiKey) {
     Return ONLY the blog title, nothing else. No quotes, no intro.
   `;
   
-  const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${apiKey}`, {
+  const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${apiKey}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ contents: [{ role: "user", parts: [{ text: prompt }] }], generationConfig: { temperature: 0.9 } })
   });
   const data = await res.json();
+  if (!data.candidates) return "SEO Content Automation for Jamstack";
   return data.candidates[0].content.parts[0].text.trim().replace(/["']/g, '');
 }
 
