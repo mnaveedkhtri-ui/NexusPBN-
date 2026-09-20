@@ -64,22 +64,35 @@ async function generateBlog() {
   `;
 
   let res, data;
-  try {
-    res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${API_KEY}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ contents: [{ role: "user", parts: [{ text: prompt }] }], generationConfig: { temperature: 0.7 } })
-    });
-    data = await res.json();
-    if (data.error && data.error.code === 503) throw new Error("503");
-  } catch (e) {
-    console.log("⚠️ gemini-3.6-flash is busy, falling back to gemini-flash-latest...");
-    res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${API_KEY}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ contents: [{ role: "user", parts: [{ text: prompt }] }], generationConfig: { temperature: 0.7 } })
-    });
-    data = await res.json();
+  let attempts = 0;
+  let success = false;
+  
+  while (attempts < 3 && !success) {
+    try {
+      attempts++;
+      res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${API_KEY}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contents: [{ role: "user", parts: [{ text: prompt }] }], generationConfig: { temperature: 0.7 } })
+      });
+      data = await res.json();
+      if (data.error && data.error.code === 503) {
+        throw new Error("503");
+      }
+      success = true;
+    } catch (e) {
+      console.log(`⚠️ Attempt ${attempts} failed. Waiting 3 seconds before retry...`);
+      await new Promise(r => setTimeout(r, 3000));
+      if (attempts === 3) {
+        console.log("⚠️ gemini-3.6-flash is busy, falling back to gemini-flash-latest...");
+        res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${API_KEY}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ contents: [{ role: "user", parts: [{ text: prompt }] }], generationConfig: { temperature: 0.7 } })
+        });
+        data = await res.json();
+      }
+    }
   }
 
   if (!data.candidates) {

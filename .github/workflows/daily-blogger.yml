@@ -1,0 +1,37 @@
+name: Daily SEO Auto-Blogger
+
+on:
+  schedule:
+    - cron: '0 0 * * *' # Runs every day at Midnight UTC
+  workflow_dispatch: # Allows manual trigger from GitHub UI
+
+jobs:
+  generate-blog:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }} # Needed to push commits back
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run Auto-Blogger Engine
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          # Create a temporary .env.local so the script can read the key
+          echo "GEMINI_API_KEY=$GEMINI_API_KEY" > .env.local
+          node scripts/auto-blogger.mjs
+
+      - name: Commit and Push new Blog Post
+        run: |
+          git config --global user.name "Nexus AI Bot"
+          git config --global user.email "bot@nexus-pbn.com"
+          git add src/app/blog/ src/data/posts.json
+          git commit -m "content(blog): Auto-published daily SEO guide via AI Engine"
+          git push origin master
