@@ -83,7 +83,7 @@ export async function POST(request: Request) {
     }
 
     const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
-    const fallbackModels = ['gemini-1.5-flash', 'gemini-1.0-pro', 'gemini-1.5-pro', 'gemini-pro'];
+    const fallbackModels = ['gemini-flash-latest', 'gemini-2.5-flash', 'gemini-3.5-flash', 'gemini-3.8-flash'];
     
     let prompt = `Write a massive, 1200+ word highly SEO-optimized, engaging, and professional blog post for a website about "${niche}".
     Format the response strictly in Markdown. 
