@@ -26,6 +26,18 @@ export async function POST(request: Request) {
     const primaryKeyword = targetKeyword.trim() ? targetKeyword : anchorText;
     let articleTitle = primaryKeyword.split(' ').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
 
+    const seed1 = Math.floor(Math.random() * 100000);
+    const seed2 = Math.floor(Math.random() * 100000);
+    const seed3 = Math.floor(Math.random() * 100000);
+
+    const imgPrompt1 = encodeURIComponent(`${niche} modern professional business concept high quality`);
+    const imgPrompt2 = encodeURIComponent(`${niche} analytics data growth success high quality`);
+    const imgPrompt3 = encodeURIComponent(`${niche} technology digital future high quality`);
+
+    const img1 = `https://image.pollinations.ai/prompt/${imgPrompt1}?width=1200&height=630&nologo=true&seed=${seed1}`;
+    const img2 = `https://image.pollinations.ai/prompt/${imgPrompt2}?width=1200&height=630&nologo=true&seed=${seed2}`;
+    const img3 = `https://image.pollinations.ai/prompt/${imgPrompt3}?width=1200&height=630&nologo=true&seed=${seed3}`;
+
     if (!domain) {
       return NextResponse.json({ error: 'Domain is required' }, { status: 400 });
     }
@@ -84,8 +96,8 @@ export async function POST(request: Request) {
     Crucially: Include a natural contextual backlink in the middle of the article using the exact anchor text "[${anchorText}](${moneyUrl})".
     
     Also, embed exactly 2 high-quality images inside the body of the article using these exact markdown tags:
-    ![${niche} Image 1](https://loremflickr.com/1600/900/${encodeURIComponent(niche).replace(/%20/g, ',')},business/all?random=1)
-    ![${niche} Image 2](https://loremflickr.com/1600/900/${encodeURIComponent(niche).replace(/%20/g, ',')},business/all?random=2)
+    ![${niche} Business](${img1})
+    ![${niche} Growth](${img2})
     
     CRITICAL SEO REQUIREMENT: Make the tone 1000% natural and human. Do NOT use em-dashes or en-dashes anywhere. Avoid typical AI buzzwords like delve, realm, tapestry.
     
@@ -144,7 +156,7 @@ Over the past decade, the industry has seen a massive paradigm shift. Previously
 
 By adopting a decentralized approach, organizations can push updates globally in a matter of seconds. Crucially, integrating with [${anchorText}](${moneyUrl}) has proven to be a highly effective strategy for those looking to maximize their digital footprint and ensure consistent performance across all metrics. 
 
-![${niche} Modernization](https://loremflickr.com/1600/900/${encodeURIComponent(niche).replace(/%20/g, ',')},business/all?random=1)
+![${niche} Modernization](${img1})
 
 ### Comparing Legacy vs. Modern Approaches
 
@@ -155,7 +167,7 @@ By adopting a decentralized approach, organizations can push updates globally in
 | **Scalability** | Requires manual server upgrades | Infinite and automatic |
 | **Maintenance** | High overhead, constant patching | Near zero maintenance |
 
-![${niche} Analytics](https://loremflickr.com/1600/900/${encodeURIComponent(niche).replace(/%20/g, ',')},business/all?random=2)
+![${niche} Analytics](${img2})
 
 ### Conclusion
 The transition toward optimized digital environments is inevitable. By embracing the principles outlined above, businesses can future-proof their infrastructure, dramatically improve user experience, and significantly reduce operational overhead. The future belongs to those who build fast and deploy globally.
@@ -287,7 +299,7 @@ A: Search engines heavily reward fast, secure websites. Moving to a modern stack
       metaDesc = metaDesc.substring(0, 147).trim() + '...';
     }
 
-    const imageUrl = `https://loremflickr.com/1600/900/${encodeURIComponent(niche).replace(/%20/g, ',')},business/all?random=3`;
+    const imageUrl = img3;
 
     // -------------------------
 
