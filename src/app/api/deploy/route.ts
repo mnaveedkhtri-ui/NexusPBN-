@@ -21,7 +21,12 @@ export async function POST(request: Request) {
     }
     const userEmail = session.user.email;
 
-    const { domain, niche = 'general', provider, moneyUrl = '#', anchorText = 'Click Here', targetKeyword = '' } = await request.json();
+    let { domain, niche = 'general', provider, moneyUrl = '#', anchorText = 'Click Here', targetKeyword = '' } = await request.json();
+    
+    // Auto-fix user URL if they forgot https:// (prevents broken relative links)
+    if (moneyUrl !== '#' && !moneyUrl.startsWith('http')) {
+      moneyUrl = `https://${moneyUrl}`;
+    }
 
     const primaryKeyword = targetKeyword.trim() ? targetKeyword : anchorText;
     let articleTitle = primaryKeyword.split(' ').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
@@ -135,54 +140,55 @@ export async function POST(request: Request) {
 
     // MASTERPIECE FALLBACK if all 4 retries fail
     if (!success) {
-      console.log("All 4 attempts failed. Using masterpiece fallback template to hide error.");
-      markdownContent = `In the rapidly evolving landscape of digital infrastructure, understanding the core components of ${niche} is no longer optional—it is a critical requirement for sustainable growth and competitive advantage.
+      console.log("All 4 attempts failed. Using universal masterpiece fallback template to hide error.");
+      const formattedNiche = niche.charAt(0).toUpperCase() + niche.slice(1);
+      markdownContent = `In today's fast-paced world, staying ahead of the curve when it comes to ${formattedNiche} is more important than ever. Whether you are a seasoned expert or just starting out, understanding the core fundamentals of ${primaryKeyword} can make a massive difference in your overall success and long-term strategy.
 
 ### In short:
-* Traditional server architectures are being replaced by distributed networks.
-* Understanding ${primaryKeyword} requires adapting to modern deployment cycles.
-* Security and speed are the primary drivers of this technological shift.
+* The landscape of ${formattedNiche} is rapidly evolving with new trends and innovations.
+* Mastering ${primaryKeyword} requires adapting to modern methodologies.
+* Efficiency, strategy, and adaptability are the primary drivers of success in this space.
 
 ### Key Takeaways
-* **Scalability:** Modern systems automatically adjust resources based on live traffic demands.
-* **Global Edge Networks:** Content is served directly from nodes closest to the end-user.
-* **Reduced Overhead:** Maintenance costs drop significantly when utilizing static site generation and automated pipelines.
+* **Strategic Planning:** Modern approaches automatically adjust based on real-time data and demand.
+* **Global Reach:** Concepts and strategies can now be applied globally with minimal friction.
+* **Reduced Friction:** By streamlining your approach, you save both time and valuable resources.
 
-### The Evolution of ${niche}
+### The Evolution of ${formattedNiche}
 
-Over the past decade, the industry has seen a massive paradigm shift. Previously, businesses relied heavily on monolithic architectures that were slow to update and expensive to maintain. Today, the focus is entirely on modularity and speed.
+Over the past decade, the industry has seen a massive paradigm shift. Previously, many relied heavily on outdated methods that were slow to adapt and expensive to maintain. Today, the focus is entirely on agility, smart planning, and rapid execution.
 
-By adopting a decentralized approach, organizations can push updates globally in a matter of seconds. Crucially, integrating with [${anchorText}](${moneyUrl}) has proven to be a highly effective strategy for those looking to maximize their digital footprint and ensure consistent performance across all metrics. 
+By adopting a forward-thinking approach, you can pivot globally in a matter of days rather than months. Crucially, integrating with [${anchorText}](${moneyUrl}) has proven to be a highly effective strategy for those looking to maximize their potential and ensure consistent performance across all critical metrics. 
 
-![${niche} Modernization](${img1})
+![${formattedNiche} Strategy Overview](${img1})
 
-### Comparing Legacy vs. Modern Approaches
+### Comparing Traditional vs. Modern Approaches
 
-| Feature | Legacy Systems | Modern Cloud/Edge |
+| Feature | Traditional Methods | Modern Strategies |
 | :--- | :--- | :--- |
-| **Deployment Time** | Hours to Days | Under 30 Seconds |
-| **Security** | Vulnerable to SQL injection | Highly secure, static assets |
-| **Scalability** | Requires manual server upgrades | Infinite and automatic |
-| **Maintenance** | High overhead, constant patching | Near zero maintenance |
+| **Execution Time** | Weeks to Months | Days to Hours |
+| **Reliability** | Prone to human error | Highly consistent & automated |
+| **Scalability** | Requires massive manual effort | Infinite and adaptable |
+| **Maintenance** | High overhead, constant fixes | Streamlined, low maintenance |
 
-![${niche} Analytics](${img2})
+![${formattedNiche} Future Trends](${img2})
 
 ### Conclusion
-The transition toward optimized digital environments is inevitable. By embracing the principles outlined above, businesses can future-proof their infrastructure, dramatically improve user experience, and significantly reduce operational overhead. The future belongs to those who build fast and deploy globally.
+The transition toward optimized, modern strategies in ${formattedNiche} is inevitable. By embracing the principles outlined above, you can future-proof your approach, dramatically improve your results, and significantly reduce operational overhead. The future belongs to those who adapt fast and think globally.
 
 ### Frequently Asked Questions
 
-**Q: Why is ${niche} becoming so critical right now?**
-A: Because consumer expectations for speed and reliability have never been higher. A slow platform directly translates to lost revenue.
+**Q: Why is ${primaryKeyword} becoming so critical right now?**
+A: Because expectations for speed, quality, and reliability have never been higher. Falling behind directly translates to lost opportunities.
 
-**Q: Do I need a massive development team to transition?**
-A: Not necessarily. Modern tools and platforms have abstracted away much of the complexity, allowing small teams to deploy enterprise-grade infrastructure.
+**Q: Do I need a massive team to implement these changes?**
+A: Not necessarily. Modern tools and platforms have abstracted away much of the complexity, allowing even individuals to execute at an enterprise level.
 
-**Q: Is edge hosting secure?**
-A: Yes. Because edge nodes typically serve pre-compiled static assets rather than dynamic database-driven pages, the attack surface is virtually eliminated.
+**Q: Are these modern strategies secure and reliable?**
+A: Yes. Because modern approaches rely on proven frameworks rather than ad-hoc solutions, your risk surface is virtually eliminated.
 
-**Q: How does this impact SEO?**
-A: Search engines heavily reward fast, secure websites. Moving to a modern stack is one of the most effective ways to improve organic search visibility.`;
+**Q: How does this impact my overall growth?**
+A: Search engines and audiences heavily reward consistency and quality. Moving to a modern strategy is one of the most effective ways to improve your organic reach and visibility.`;
     }
 
     // Convert Markdown to HTML
