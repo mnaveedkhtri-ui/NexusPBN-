@@ -26,26 +26,15 @@ export async function POST(request: Request) {
     const primaryKeyword = targetKeyword.trim() ? targetKeyword : anchorText;
     let articleTitle = primaryKeyword.split(' ').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
 
-    // 10 High-Quality Unsplash Photo IDs (Tech, Business, Lifestyle, Modern Workspaces)
-    const unsplashIds = [
-      '1498050108023-c5249f4df085', // Laptop typing
-      '1504384308090-c894fdcc538d', // Modern office
-      '1518770660439-4636190af475', // Tech
-      '1486312338219-ce68d2c6f44d', // Desk setup
-      '1522202176988-66273c2fd55f', // Coffee notebook
-      '1434499140098-0d1d522b3117', // Clean workspace
-      '1432888117246-f05915e171f2', // Business meeting
-      '1472851294608-0639dce14e5f', // Minimalist desk
-      '1515378960855-9125b7d022af', // Abstract business
-      '1451187580459-43490279c0fa'  // Digital earth
-    ];
-    
-    // Shuffle and pick 3 unique images for this post
-    const shuffledImgs = [...unsplashIds].sort(() => 0.5 - Math.random());
-    
-    const img1 = `https://images.unsplash.com/photo-${shuffledImgs[0]}?w=1200&h=630&fit=crop&q=80`;
-    const img2 = `https://images.unsplash.com/photo-${shuffledImgs[1]}?w=1200&h=630&fit=crop&q=80`;
-    const img3 = `https://images.unsplash.com/photo-${shuffledImgs[2]}?w=1200&h=630&fit=crop&q=80`;
+    // Generate hyper-relevant image queries based on the user's specific niche and keyword
+    const q1 = encodeURIComponent(`${primaryKeyword} high quality`);
+    const q2 = encodeURIComponent(`${niche} concept professional`);
+    const q3 = encodeURIComponent(`${niche} lifestyle modern`);
+
+    // Use Bing's highly robust Thumbnail API to dynamically fetch exact 1200x630 images based on the queries
+    const img1 = `https://tse1.mm.bing.net/th?q=${q1}&w=1200&h=630&c=7&rs=1`;
+    const img2 = `https://tse1.mm.bing.net/th?q=${q2}&w=1200&h=630&c=7&rs=1`;
+    const img3 = `https://tse1.mm.bing.net/th?q=${q3}&w=1200&h=630&c=7&rs=1`;
 
     if (!domain) {
       return NextResponse.json({ error: 'Domain is required' }, { status: 400 });
