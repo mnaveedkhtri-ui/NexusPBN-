@@ -52,10 +52,12 @@ async function generateBlog() {
     2. Include 3 internal links to '/' and '/autoblogging-alternative'.
     3. Include 1 external link to an authoritative site (like Google Search Central or Ahrefs).
     4. Use semantic HTML (article, section, h2, h3).
-    5. Include an Article JSON-LD Schema.
-    6. Include an image from Bing using: <img src="https://tse1.mm.bing.net/th?q=${encodeURIComponent(topic)}" alt="${topic}" className="w-full rounded-xl my-8 object-cover max-h-96" />
-    7. Length: ~800+ words. Deep, technical, LSI optimized.
+    5. Include an Article AND FAQPage JSON-LD Schema.
+    6. Include a MAIN feature image and at least 2 BODY images using this format: <img src="https://tse1.mm.bing.net/th?q=${encodeURIComponent(topic + ' SEO graph')}" alt="highly optimized descriptive LSI alt text" title="optimized title text" className="w-full rounded-xl my-8 object-cover max-h-96" /> (change the search query slightly for each image to get varied results).
+    7. Length: ~1200+ words. Deep, technical, LSI optimized.
     8. Use Tailwind dark mode classes (bg-[#0a0a0a], text-[#ededed], etc).
+    9. MUST end with a "Conclusion" section (h2).
+    10. MUST end with a "Frequently Asked Questions" section (h2) with at least 3 Q&As that are also marked up in the JSON-LD schema.
     
     Export default function BlogPost() { ... }
     Include the metadata export.
