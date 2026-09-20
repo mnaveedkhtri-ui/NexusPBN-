@@ -30,13 +30,9 @@ export async function POST(request: Request) {
     const seed2 = Math.floor(Math.random() * 100000);
     const seed3 = Math.floor(Math.random() * 100000);
 
-    const imgPrompt1 = encodeURIComponent(`${niche} modern professional business concept high quality`);
-    const imgPrompt2 = encodeURIComponent(`${niche} analytics data growth success high quality`);
-    const imgPrompt3 = encodeURIComponent(`${niche} technology digital future high quality`);
-
-    const img1 = `https://image.pollinations.ai/prompt/${imgPrompt1}?width=1200&height=630&nologo=true&seed=${seed1}`;
-    const img2 = `https://image.pollinations.ai/prompt/${imgPrompt2}?width=1200&height=630&nologo=true&seed=${seed2}`;
-    const img3 = `https://image.pollinations.ai/prompt/${imgPrompt3}?width=1200&height=630&nologo=true&seed=${seed3}`;
+    const img1 = `https://picsum.photos/seed/${seed1}/1200/630`;
+    const img2 = `https://picsum.photos/seed/${seed2}/1200/630`;
+    const img3 = `https://picsum.photos/seed/${seed3}/1200/630`;
 
     if (!domain) {
       return NextResponse.json({ error: 'Domain is required' }, { status: 400 });
@@ -188,7 +184,25 @@ A: Search engines heavily reward fast, secure websites. Moving to a modern stack
     }
 
     // Convert Markdown to HTML
-    const htmlArticleContent = await marked(markdownContent);
+    let htmlArticleContent = await marked(markdownContent);
+    
+    // --- AI HALLUCINATION FAILSAFES ---
+    // 1. Force inject External Link if missing
+    if (!htmlArticleContent.includes(moneyUrl) && moneyUrl !== '#') {
+      console.log("AI missed the external link. Force injecting it at the end.");
+      htmlArticleContent += `\n<p>For more insights on this topic, check out <a href="${moneyUrl}" target="_blank" rel="dofollow">${anchorText}</a>.</p>`;
+    }
+    
+    // 2. Force inject Body Images if missing (checks if <img exists)
+    if (!htmlArticleContent.includes('<img')) {
+      console.log("AI missed the images. Force injecting them.");
+      htmlArticleContent = `
+        <img src="${img1}" alt="${niche} concept" style="width:100%; border-radius:10px; margin-bottom:20px;" />
+        ${htmlArticleContent}
+        <img src="${img2}" alt="${niche} growth" style="width:100%; border-radius:10px; margin-top:20px; margin-bottom:20px;" />
+      `;
+    }
+
     
     const formattedNiche = niche.charAt(0).toUpperCase() + niche.slice(1);
     // 2. CREATE GITHUB REPOSITORY
