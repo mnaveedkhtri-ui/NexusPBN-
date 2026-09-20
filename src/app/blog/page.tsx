@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { Metadata } from 'next';
+import posts from '../../data/posts.json';
 
 export const metadata: Metadata = {
   title: 'SEO Resource Center & Blog | Nexus PBN Deployer',
@@ -7,21 +8,6 @@ export const metadata: Metadata = {
 };
 
 export default function BlogIndex() {
-  const posts = [
-    {
-      title: 'How to Build a Zero-Footprint PBN in 2026',
-      slug: 'how-to-build-pbn-2026',
-      excerpt: 'Learn how to use Edge networks, static generation, and the Gemini API to build a Private Blog Network that Google loves.',
-      date: 'September 20, 2026',
-    },
-    {
-      title: 'Generative Engine Optimization (GEO) Explained',
-      slug: '#',
-      excerpt: 'How to optimize your content so ChatGPT, Perplexity, and Gemini recommend your tools directly to users.',
-      date: 'Coming Soon',
-    }
-  ];
-
   return (
     <main className="min-h-screen bg-[#0a0a0a] text-[#ededed] font-sans">
       <header className="max-w-5xl mx-auto px-6 py-20 text-center border-b border-[#222]">
