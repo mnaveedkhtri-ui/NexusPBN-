@@ -12,20 +12,22 @@ export async function generateStaticParams() {
 }
 
 type Props = {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 };
 
 // Dynamically generate Meta Tags for each competitor page
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const competitorName = params.slug.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+  const resolvedParams = await params;
+  const competitorName = resolvedParams.slug.split('-').map((word: string) => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
   return {
     title: `Best ${competitorName} Alternative 2026 | Nexus PBN Deployer`,
     description: `Why pay for ${competitorName} when you can deploy automated AI sites for free? Discover why Nexus PBN Deployer is the top ${competitorName} alternative.`,
   };
 }
 
-export default function ProgrammaticAlternativePage({ params }: Props) {
-  const competitorName = params.slug.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+export default async function ProgrammaticAlternativePage({ params }: Props) {
+  const resolvedParams = await params;
+  const competitorName = resolvedParams.slug.split('-').map((word: string) => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
 
   // Dynamic JSON-LD for AEO
   const jsonLd = {
