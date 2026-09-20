@@ -86,8 +86,26 @@ export default function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="py-8 border-t border-white/5 text-center text-[#888] text-sm">
-        <p>&copy; 2026 NexusPBN Inc. Built specifically for elite SEOs and link builders.</p>
+      <footer className="py-12 border-t border-white/5 bg-[#0a0a0a]">
+        <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-8 text-[#888] text-sm mb-8">
+          <div>
+            <h4 className="text-white font-bold mb-4">Nexus PBN Deployer</h4>
+            <p>The ultimate static edge SEO platform for 2026.</p>
+          </div>
+          <div>
+            <h4 className="text-white font-bold mb-4">SEO Comparisons</h4>
+            <ul className="space-y-2">
+              <li>
+                <Link href="/autoblogging-alternative" className="hover:text-white transition">
+                  Best Autoblogging.ai Alternative
+                </Link>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div className="text-center text-[#555] text-xs pt-8 border-t border-white/5">
+          <p>&copy; 2026 NexusPBN Inc. Built specifically for elite SEOs and link builders.</p>
+        </div>
       </footer>
     </div>
   );
