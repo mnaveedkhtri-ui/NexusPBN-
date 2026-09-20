@@ -1,5 +1,14 @@
 import { MetadataRoute } from 'next';
-import posts from '../data/posts.json';
+import postsJson from '../data/posts.json';
+
+type BlogPost = {
+  title: string;
+  slug: string;
+  excerpt: string;
+  date: string;
+};
+
+const posts: BlogPost[] = postsJson as BlogPost[];
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = 'https://nexus-pbn.vercel.app';

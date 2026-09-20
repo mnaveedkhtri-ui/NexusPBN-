@@ -1,7 +1,16 @@
 import Link from 'next/link';
 import { Metadata } from 'next';
 import { Calendar, ArrowRight, BookOpen } from 'lucide-react';
-import posts from '../../data/posts.json';
+import postsJson from '../../data/posts.json';
+
+type BlogPost = {
+  title: string;
+  slug: string;
+  excerpt: string;
+  date: string;
+};
+
+const posts: BlogPost[] = postsJson as BlogPost[];
 
 export const metadata: Metadata = {
   title: 'SEO Resource Center & Blog | Nexus PBN Deployer',
