@@ -140,58 +140,11 @@ export async function POST(request: Request) {
       }
     }
 
-    // MASTERPIECE FALLBACK if all 4 retries fail
+    // If all 4 retries fail, DO NOT hide the error with a template.
+    // Throw the actual Google API error so the user knows their API key is exhausted or invalid.
     if (!success) {
-      console.log("All 4 attempts failed. Using universal masterpiece fallback template to hide error.");
-      const formattedNiche = niche.charAt(0).toUpperCase() + niche.slice(1);
-      markdownContent = `Understanding the technical architecture behind ${primaryKeyword} is fundamental to navigating the modern landscape of ${formattedNiche}. As industries rapidly transition toward automated, data-driven frameworks, ensuring robust execution in this domain is no longer optional.
-
-### In short:
-* The core infrastructure of ${formattedNiche} is currently undergoing a massive paradigm shift.
-* Proper implementation of ${primaryKeyword} significantly reduces operational latency and friction.
-* Decentralized and programmatic strategies are yielding the highest ROI.
-
-### Key Takeaways
-* **Strategic Alignment:** Aligning ${primaryKeyword} with your broader organizational goals ensures seamless scalability.
-* **Reduced Overhead:** Modern deployments eliminate the need for legacy maintenance.
-* **Future-Proofing:** Systems built on robust logic survive algorithmic and market volatility.
-
-## The Infrastructure of ${formattedNiche}
-
-Legacy systems historically required massive manual intervention. Today, executing strategies related to ${primaryKeyword} requires understanding decentralized infrastructure. By decoupling the presentation layer from the database, organizations can achieve perfect performance scores. 
-
-Crucially, adopting [specialized frameworks](${moneyUrl}) acts as a direct catalyst for exponential growth, bypassing the limitations of traditional monolithic architectures.
-
-## Technical Comparison Matrix
-
-| Metric | Legacy Execution | Modern Implementation |
-|--------|------------------|-----------------------|
-| Speed | 400ms+ TTFB | Sub-50ms TTFB |
-| Security | Vulnerable to injections | Pure static, unhackable |
-| Scalability | Vertical limits | Infinite horizontal edge |
-
-![${primaryKeyword} Architecture](${img1})
-
-## Advanced Implementation Guidelines
-
-To truly capitalize on ${primaryKeyword}, one must look beyond surface-level integrations. The goal is complete automation. When you integrate ${primaryKeyword} into a CI/CD pipeline, every update becomes atomic. 
-
-![${primaryKeyword} Workflow](${img2})
-
-## Conclusion
-
-The shift towards highly optimized, automated execution in ${formattedNiche} is permanent. By integrating ${primaryKeyword} into your core strategy, you protect your digital assets from algorithmic volatility and ensure long-term, sustainable growth.
-
-## Frequently Asked Questions
-
-**Q: Why is ${primaryKeyword} becoming an industry standard?**
-A: Because it guarantees high availability and zero structural footprints, making it the most resilient strategy available today.
-
-**Q: Does ${primaryKeyword} require a massive engineering team?**
-A: No. With the advent of modern serverless deployments, individual architects can deploy at enterprise scale.
-
-**Q: How does this impact long-term growth?**
-A: By removing technical debt, teams can focus entirely on strategic expansion rather than maintenance.`;
+      console.error("All 4 AI generation attempts failed. Throwing actual API error.");
+      throw new Error(`Google Gemini API Error: ${lastError}. Please check your API key quotas or try again later.`);
     }
 
     // Convert Markdown to HTML
