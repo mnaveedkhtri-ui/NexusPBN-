@@ -28,20 +28,25 @@ export async function POST(request: Request) {
       moneyUrl = `https://${moneyUrl}`;
     }
 
-    const primaryKeyword = targetKeyword.trim() ? targetKeyword : anchorText;
-    let articleTitle = primaryKeyword.split(' ').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
-
-    // Generate 100% unique, high-definition stock images using LoremFlickr (Unsplash Alternative)
-    // We add a random number to the URL to bypass browser caching and ensure 3 unique images
-    const randomSeed1 = Math.floor(Math.random() * 10000);
-    const randomSeed2 = Math.floor(Math.random() * 10000);
-    const randomSeed3 = Math.floor(Math.random() * 10000);
+    // -------------------------------------------------------------
+    // GOD-TIER AI IMAGE GENERATION (STRICTLY NO FACES/CATS)
+    // -------------------------------------------------------------
+    const randomSeed1 = Math.floor(Math.random() * 1000000);
+    const randomSeed2 = Math.floor(Math.random() * 1000000);
+    const randomSeed3 = Math.floor(Math.random() * 1000000);
     
-    // Clean keyword for Flickr search (e.g. 'organic skincare')
-    const searchTerms = encodeURIComponent(primaryKeyword.split(' ').slice(0, 2).join(','));
-    const img1 = `https://loremflickr.com/1200/630/${searchTerms},product/all?lock=${randomSeed1}`;
-    const img2 = `https://loremflickr.com/1200/630/${searchTerms},aesthetic/all?lock=${randomSeed2}`;
-    const img3 = `https://loremflickr.com/1200/630/${searchTerms},lifestyle/all?lock=${randomSeed3}`;
+    // We isolate just the first word of the niche/keyword to avoid complex prompts that confuse the AI into drawing people.
+    const safeNiche = niche.split(' ')[0] || 'product';
+    const safeKeyword = primaryKeyword.split(' ')[0] || safeNiche;
+
+    // We explicitly tell Pollinations: "macro shot, glass bottle, objects only, no humans, empty background"
+    const q1 = encodeURIComponent(`Professional commercial product photography of ${safeNiche} items, glass bottle, clean minimalist white background, studio lighting, highly detailed 8k, objects only, no people, no face, no humans`);
+    const q2 = encodeURIComponent(`Aesthetic minimalist flat lay of ${safeKeyword} items on a marble counter, soft natural lighting, objects only, no people`);
+    const q3 = encodeURIComponent(`Macro close up of ${safeNiche} texture, clean aesthetic, high quality stock photo, no humans`);
+
+    const img1 = `https://image.pollinations.ai/prompt/${q1}?width=1200&height=630&nologo=true&seed=${randomSeed1}`;
+    const img2 = `https://image.pollinations.ai/prompt/${q2}?width=1200&height=630&nologo=true&seed=${randomSeed2}`;
+    const img3 = `https://image.pollinations.ai/prompt/${q3}?width=1200&height=630&nologo=true&seed=${randomSeed3}`;
 
     if (!domain) {
       return NextResponse.json({ error: 'Domain is required' }, { status: 400 });
@@ -58,14 +63,13 @@ export async function POST(request: Request) {
     const CLOUDFLARE_TOKEN = userKeys.cloudflare_token;
     const CLOUDFLARE_ACCOUNT_ID = userKeys.cloudflare_account_id;
     
-    // We don't have team IDs yet, assume empty or null
     const VERCEL_TEAM_ID = '';
 
     if (!GEMINI_API_KEY || !GITHUB_TOKEN || !VERCEL_TOKEN || !CLOUDFLARE_TOKEN || !CLOUDFLARE_ACCOUNT_ID) {
       return NextResponse.json({ error: "One or more API keys are missing in Settings." }, { status: 400 });
     }
 
-    // Clean up domain and add professional SEO suffixes instead of spammy numbers
+    // Clean up domain
     const cleanDomain = domain.toLowerCase().replace(/[^a-z0-9]/g, '-');
     const suffixes = ['hq', 'daily', 'insights', 'hub', 'blog', 'news', 'update', 'pro', 'guide'];
     const randomSuffix = suffixes[Math.floor(Math.random() * suffixes.length)];
@@ -80,119 +84,86 @@ export async function POST(request: Request) {
         aiTone = dbRes.rows[0].tone || aiTone;
         aiCustomPrompt = dbRes.rows[0].custom_prompt || '';
       }
-    } catch (err) {
-      console.log('Could not fetch AI Settings:', err);
-    }
+    } catch (err) { }
 
     const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
-    // Expand the array to give us 5 strong attempts on the fastest models
-    const fallbackModels = ['gemini-1.5-pro-latest', 'gemini-1.5-flash-latest', 'gemini-1.5-flash-latest', 'gemini-1.5-flash-latest', 'gemini-flash-latest'];
     
-    let prompt = `You are an elite, top-tier SEO Content Architect. Write a massive, 1500+ word highly authoritative, data-backed, and engaging blog post specifically about "${primaryKeyword}" for a website in the "${niche}" niche.
+    // We use gemini-1.5-flash-8b-latest because it is extremely fast and rarely hits 503 limits compared to the standard flash models.
+    const fallbackModels = [
+      'gemini-1.5-flash-8b-latest',
+      'gemini-1.5-flash-latest', 
+      'gemini-2.0-flash-exp',
+      'gemini-1.5-pro-latest'
+    ];
     
-    DO NOT write a generic, fluffy article about the niche. You MUST deeply answer the specific intent behind the keyword "${primaryKeyword}". Demonstrate extreme E-E-A-T (Experience, Expertise, Authoritativeness, Trustworthiness).
-    
-    Format the response strictly in Markdown. Follow this exact structure:
-    1. Start directly with an engaging, hook-driven introductory paragraph about "${primaryKeyword}". (No H1 title at the top, I will add it).
-    2. Include an "In short:" summary line.
-    3. Include a "Key Takeaways" section with actionable bullet points.
-    4. Dive deep into the topic using multiple H2 and H3 subheadings. Use LSI keywords (Semantic entities) naturally throughout.
-    5. Include a well-formatted Markdown Table comparing data relevant to "${primaryKeyword}" (e.g., pricing, features, workflows).
-    6. Include a "Conclusion" H2 section summarizing the key insights.
-    7. End with a "Frequently Asked Questions" H2 section containing 4 common Q&A explicitly about "${primaryKeyword}".
-    
-    Crucially: Include a natural, highly contextual backlink in the middle of the article using the exact anchor text "[${anchorText}](${moneyUrl})".
-    
-    Also, embed exactly 2 high-quality images inside the body using these EXACT HTML tags (Do not use markdown for images):
-    <img src="${img1}" alt="${primaryKeyword} Concept" style="width:100%; border-radius:10px; margin-top:20px; margin-bottom:20px;" />
-    <img src="${img2}" alt="${primaryKeyword} Implementation" style="width:100%; border-radius:10px; margin-top:20px; margin-bottom:20px;" />
-    
-    CRITICAL SEO REQUIREMENT: Make the tone 1000% natural, human, and authoritative. Do NOT use generic AI filler like "In today's fast-paced world", "delve", "realm", "tapestry". Get straight to the point with high-value technical/industry insights.
-    
-    TONE OF VOICE: ${aiTone}`;
+    // -------------------------------------------------------------
+    // GOD-TIER SEO / AEO / GEO OPTIMIZED PROMPT
+    // -------------------------------------------------------------
+    let prompt = `You are a World-Class SEO Content Architect, AEO (Answer Engine Optimization) Expert, and Technical Copywriter.
+Your task is to write a massive, 1500+ word highly authoritative, data-backed, and engaging pillar article about "${primaryKeyword}" for the "${niche}" niche.
+
+### 🛑 CRITICAL RULES (VIOLATION RESULTS IN FAILURE):
+1. **NO FLUFF OR AI CLICHÉS:** Absolutely do NOT use phrases like "In today's fast-paced world", "delve into", "realm of", "tapestry", "unveiling", or "crucial". Speak directly to the expert reader with high-value technical/industry insights.
+2. **FORMAT:** Use strict Markdown. Do NOT output a top-level H1 (I will add it). Start immediately with an engaging, hook-driven introduction.
+3. **LENGTH:** The content must be extremely comprehensive (minimum 1500 words). Do not summarize. Expand on methodologies, data points, and advanced implementations.
+
+### 🏗️ REQUIRED STRUCTURE:
+1. **Introduction:** Hook the reader with a surprising statistic or contrarian industry truth about "${primaryKeyword}".
+2. **"In short" Summary:** 3 bullet points summarizing the entire article for Answer Engines (AEO).
+3. **Core Architecture (H2s & H3s):** Dive deep. Use semantic LSI keywords naturally. Group concepts logically.
+4. **Data Comparison Matrix:** Include a Markdown Table comparing data, pricing, or frameworks relevant to "${primaryKeyword}".
+5. **Advanced Implementation (H2):** Provide step-by-step technical advice that an expert would appreciate.
+6. **Conclusion:** Summarize the paradigm shift in the industry.
+7. **Frequently Asked Questions (H2):** 4 highly specific Q&As optimized for Google Featured Snippets.
+
+### 🔗 BACKLINK & IMAGE INJECTION (MANDATORY):
+- You MUST include a natural, highly contextual backlink in the exact middle of the article using the exact anchor text: "[${anchorText}](${moneyUrl})". Make it flow perfectly with the surrounding sentence.
+- You MUST inject exactly two images into the body of the article using RAW HTML tags (Do not use Markdown for images). Place them between major H2 sections. Use these exact tags:
+<img src="${img1}" alt="${primaryKeyword} Concept" style="width:100%; border-radius:10px; margin-top:20px; margin-bottom:20px;" />
+<img src="${img2}" alt="${primaryKeyword} Implementation" style="width:100%; border-radius:10px; margin-top:20px; margin-bottom:20px;" />
+
+TONE OF VOICE: ${aiTone}`;
     
     if (aiCustomPrompt.trim()) {
-      prompt += `\n\nADDITIONAL RULES TO STRICTLY FOLLOW:\n${aiCustomPrompt}`;
+      prompt += `\n\nADDITIONAL USER RULES TO STRICTLY FOLLOW:\n${aiCustomPrompt}`;
     }
 
     let markdownContent = '';
     let success = false;
     let lastError = '';
 
-    // DEVELOPER MAGIC BYPASS: If Google is down, use this masterpiece for testing!
-    if (primaryKeyword.toLowerCase().includes('skincare') || primaryKeyword.toLowerCase().includes('organic')) {
-      console.log("Using Developer Magic Bypass for Skincare test!");
-      success = true;
-      markdownContent = `Understanding the science behind **${primaryKeyword}** is the ultimate key to achieving flawless, glass skin. In the rapidly evolving landscape of ${niche}, relying on outdated routines is no longer effective. You need a data-backed, multi-step regimen.
-
-### In short:
-* The Korean approach to skincare focuses on hydration, barrier repair, and gentle exfoliation.
-* Implementing ${primaryKeyword} requires layering products from thinnest to thickest consistency.
-* Organic and cruelty-free ingredients yield the highest long-term ROI for your skin barrier.
-
-### Key Takeaways
-* **Double Cleansing:** The foundation of any successful K-Beauty routine starts with an oil-based cleanser followed by a water-based one.
-* **Essence & Serums:** These deliver concentrated active ingredients directly into the epidermis.
-* **Sun Protection:** The most critical step for anti-aging and protecting your skin matrix.
-
-## The 10-Step Architecture
-
-Historically, Western routines relied on harsh astringents. Today, executing strategies related to ${primaryKeyword} requires understanding skin barrier mechanics. By decoupling active treatments (like Retinol) from deep hydration (like Snail Mucin), you can achieve perfect results.
-
-Crucially, adopting [specialized, cruelty-free regimens](${moneyUrl}) acts as a direct catalyst for glowing skin, bypassing the limitations of traditional, chemical-heavy products.
-
-## Routine Comparison Matrix
-
-| Step | Traditional Routine | Advanced K-Beauty Implementation |
-|--------|------------------|-----------------------|
-| Cleansing | Single harsh wash | Double cleansing (Oil + Water) |
-| Toning | Alcohol-based astringents | Hydrating, pH-balancing toners |
-| Treatment | Generic moisturizer | Targeted essences, serums, and ampoules |
-
-<img src="${img1}" alt="${primaryKeyword} Routine" style="width:100%; border-radius:10px; margin-top:20px; margin-bottom:20px;" />
-
-## Advanced Implementation Guidelines
-
-To truly capitalize on ${primaryKeyword}, one must look beyond surface-level products. The goal is complete barrier optimization. When you integrate ${primaryKeyword} into your daily cycle, every product becomes a building block.
-
-<img src="${img2}" alt="${primaryKeyword} Results" style="width:100%; border-radius:10px; margin-top:20px; margin-bottom:20px;" />
-
-## Conclusion
-
-The shift towards highly optimized, organic execution in ${niche} is permanent. By integrating ${primaryKeyword} into your core routine, you protect your dermal assets from environmental volatility and ensure long-term, sustainable glow.
-
-## Frequently Asked Questions
-
-**Q: Why is ${primaryKeyword} becoming an industry standard?**
-A: Because it guarantees high hydration and zero barrier damage, making it the most resilient strategy available today.
-
-**Q: Does ${primaryKeyword} require massive financial investment?**
-A: No. With the advent of modern organic brands, individuals can build a premium routine on a budget.
-
-**Q: How does this impact long-term aging?**
-A: By removing harsh chemicals, your skin can focus entirely on cellular regeneration rather than inflammation repair.`;
-    } else {
-      // Retry Logic: Try all available fallback models
-      for (let attempt = 1; attempt <= fallbackModels.length; attempt++) {
-        try {
-          if (request.signal.aborted) throw new Error('Deployment canceled by user');
-          const currentModelName = fallbackModels[attempt - 1];
-          console.log(`Gemini Attempt ${attempt} using ${currentModelName}...`);
-          
-          const model = genAI.getGenerativeModel({ model: currentModelName });
-          const result = await model.generateContent(prompt);
-          markdownContent = result.response.text();
-          
-          success = true;
-          console.log(`Gemini succeeded on attempt ${attempt} with ${currentModelName}!`);
-          break; // Exit loop if successful
-        } catch (e: any) {
-          lastError = e.message;
-          console.log(`Attempt ${attempt} failed:`, e.message);
-          if (attempt < fallbackModels.length) {
-            // If it's a 503 high demand error, wait 4.5 seconds before retrying to let the server breathe
-            await delay(4500); 
-          }
+    // -------------------------------------------------------------
+    // 503-PROOF EXPONENTIAL BACKOFF RETRY SYSTEM
+    // -------------------------------------------------------------
+    // We try up to 8 times across different models, with increasing delays to bypass Google's 503 spikes.
+    const maxAttempts = 8;
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      try {
+        if (request.signal.aborted) throw new Error('Deployment canceled by user');
+        
+        // Cycle through models. If we exceed the array length, loop back to the start.
+        const currentModelName = fallbackModels[(attempt - 1) % fallbackModels.length];
+        console.log(`Gemini Attempt ${attempt} using ${currentModelName}...`);
+        
+        const model = genAI.getGenerativeModel({ model: currentModelName });
+        const result = await model.generateContent(prompt);
+        markdownContent = result.response.text();
+        
+        if (markdownContent.length < 500) {
+           throw new Error("AI generated a dangerously short response. Retrying.");
+        }
+        
+        success = true;
+        console.log(`Gemini succeeded on attempt ${attempt} with ${currentModelName}!`);
+        break; // Exit loop if successful
+      } catch (e: any) {
+        lastError = e.message;
+        console.log(`Attempt ${attempt} failed:`, e.message);
+        if (attempt < maxAttempts) {
+          // Exponential backoff: 3s, 6s, 12s, 15s...
+          const waitTime = Math.min(3000 * Math.pow(2, attempt - 1), 15000);
+          console.log(`Waiting ${waitTime/1000}s before next attempt...`);
+          await new Promise(res => setTimeout(res, waitTime));
         }
       }
     }
