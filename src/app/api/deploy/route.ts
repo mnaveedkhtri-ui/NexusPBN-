@@ -85,24 +85,26 @@ export async function POST(request: Request) {
     const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
     const fallbackModels = ['gemini-flash-latest', 'gemini-2.5-flash', 'gemini-3.5-flash', 'gemini-3.8-flash'];
     
-    let prompt = `Write a massive, 1200+ word highly SEO-optimized, engaging, and professional blog post for a website about "${niche}".
-    Format the response strictly in Markdown. 
-    Follow this exact structure:
-    1. Start directly with an engaging introductory paragraph. Do not include a main H1 title at the top (I will add it).
-    2. Include a "In short:" summary line.
-    3. Include a "Key Takeaways" section with bullet points.
-    4. Use multiple H2 and H3 subheadings for sections.
-    5. Include a well-formatted Markdown Table comparing data relevant to the ${niche} niche (e.g., pricing, features, pros/cons). Ensure the table uses standard markdown pipe format.
-    6. Include a "Conclusion" H2 section summarizing the article.
-    7. End with a "Frequently Asked Questions" H2 section containing 4 common Q&A about ${niche}.
+    let prompt = `You are an elite, top-tier SEO Content Architect. Write a massive, 1500+ word highly authoritative, data-backed, and engaging blog post specifically about "${primaryKeyword}" for a website in the "${niche}" niche.
     
-    Crucially: Include a natural contextual backlink in the middle of the article using the exact anchor text "[${anchorText}](${moneyUrl})".
+    DO NOT write a generic, fluffy article about the niche. You MUST deeply answer the specific intent behind the keyword "${primaryKeyword}". Demonstrate extreme E-E-A-T (Experience, Expertise, Authoritativeness, Trustworthiness).
     
-    Also, embed exactly 2 high-quality images inside the body of the article using these exact markdown tags:
-    ![${niche} Business](${img1})
-    ![${niche} Growth](${img2})
+    Format the response strictly in Markdown. Follow this exact structure:
+    1. Start directly with an engaging, hook-driven introductory paragraph about "${primaryKeyword}". (No H1 title at the top, I will add it).
+    2. Include an "In short:" summary line.
+    3. Include a "Key Takeaways" section with actionable bullet points.
+    4. Dive deep into the topic using multiple H2 and H3 subheadings. Use LSI keywords (Semantic entities) naturally throughout.
+    5. Include a well-formatted Markdown Table comparing data relevant to "${primaryKeyword}" (e.g., pricing, features, workflows).
+    6. Include a "Conclusion" H2 section summarizing the key insights.
+    7. End with a "Frequently Asked Questions" H2 section containing 4 common Q&A explicitly about "${primaryKeyword}".
     
-    CRITICAL SEO REQUIREMENT: Make the tone 1000% natural and human. Do NOT use em-dashes or en-dashes anywhere. Avoid typical AI buzzwords like delve, realm, tapestry.
+    Crucially: Include a natural, highly contextual backlink in the middle of the article using the exact anchor text "[${anchorText}](${moneyUrl})".
+    
+    Also, embed exactly 2 high-quality images inside the body using these exact markdown tags:
+    ![${primaryKeyword} Concept](${img1})
+    ![${primaryKeyword} Implementation](${img2})
+    
+    CRITICAL SEO REQUIREMENT: Make the tone 1000% natural, human, and authoritative. Do NOT use generic AI filler like "In today's fast-paced world", "delve", "realm", "tapestry". Get straight to the point with high-value technical/industry insights.
     
     TONE OF VOICE: ${aiTone}`;
     
