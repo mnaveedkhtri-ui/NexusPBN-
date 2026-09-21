@@ -32,24 +32,26 @@ export async function POST(request: Request) {
     let articleTitle = primaryKeyword.split(' ').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
 
     // -------------------------------------------------------------
-    // GOD-TIER AI IMAGE GENERATION (STRICTLY NO FACES/CATS)
+    // REAL STOCK PHOTOS (UNSPLASH INTERNAL API - NO KEY REQUIRED)
     // -------------------------------------------------------------
-    const randomSeed1 = Math.floor(Math.random() * 1000000);
-    const randomSeed2 = Math.floor(Math.random() * 1000000);
-    const randomSeed3 = Math.floor(Math.random() * 1000000);
+    // We isolate just the first two words of the keyword to ensure Unsplash finds a match.
+    const safeKeyword = primaryKeyword.split(' ').slice(0, 2).join(' ') || 'business';
     
-    // We isolate just the first word of the niche/keyword to avoid complex prompts that confuse the AI into drawing people.
-    const safeNiche = niche.split(' ')[0] || 'product';
-    const safeKeyword = primaryKeyword.split(' ')[0] || safeNiche;
-
-    // We explicitly tell Pollinations: "macro shot, glass bottle, objects only, no humans, empty background"
-    const q1 = encodeURIComponent(`Professional commercial product photography of ${safeNiche} items, glass bottle, clean minimalist white background, studio lighting, highly detailed 8k, objects only, no people, no face, no humans`);
-    const q2 = encodeURIComponent(`Aesthetic minimalist flat lay of ${safeKeyword} items on a marble counter, soft natural lighting, objects only, no people`);
-    const q3 = encodeURIComponent(`Macro close up of ${safeNiche} texture, clean aesthetic, high quality stock photo, no humans`);
-
-    const img1 = `https://image.pollinations.ai/prompt/${q1}?width=1200&height=630&nologo=true&seed=${randomSeed1}`;
-    const img2 = `https://image.pollinations.ai/prompt/${q2}?width=1200&height=630&nologo=true&seed=${randomSeed2}`;
-    const img3 = `https://image.pollinations.ai/prompt/${q3}?width=1200&height=630&nologo=true&seed=${randomSeed3}`;
+    let img1 = 'https://images.unsplash.com/photo-1556228578-0d85b1a4d571?q=80&w=1200&auto=format&fit=crop';
+    let img2 = 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?q=80&w=1200&auto=format&fit=crop';
+    let img3 = 'https://images.unsplash.com/photo-1556228720-192a6af4e86e?q=80&w=1200&auto=format&fit=crop';
+    
+    try {
+      const unsplashRes = await fetch(`https://unsplash.com/napi/search/photos?query=${encodeURIComponent(safeKeyword)}&per_page=3`);
+      const unsplashData = await unsplashRes.json();
+      if (unsplashData?.results?.length >= 3) {
+        img1 = unsplashData.results[0].urls.regular;
+        img2 = unsplashData.results[1].urls.regular;
+        img3 = unsplashData.results[2].urls.regular;
+      }
+    } catch (e) {
+      console.error("Unsplash Fetch Failed, using fallback placeholders", e);
+    }
 
     if (!domain) {
       return NextResponse.json({ error: 'Domain is required' }, { status: 400 });
