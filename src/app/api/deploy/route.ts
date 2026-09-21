@@ -87,7 +87,7 @@ export async function POST(request: Request) {
     }
 
     const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
-    const fallbackModels = ['gemini-1.5-pro', 'gemini-1.5-flash', 'gemini-1.5-flash-8b', 'gemini-1.5-flash'];
+    const fallbackModels = ['gemini-1.5-pro-latest', 'gemini-1.5-flash-latest', 'gemini-flash-latest'];
     
     let prompt = `You are an elite, top-tier SEO Content Architect. Write a massive, 1500+ word highly authoritative, data-backed, and engaging blog post specifically about "${primaryKeyword}" for a website in the "${niche}" niche.
     
@@ -120,8 +120,8 @@ export async function POST(request: Request) {
     let success = false;
     let lastError = '';
 
-    // Retry Logic: Try up to 4 times, falling back to lighter models if quota is exceeded
-    for (let attempt = 1; attempt <= 4; attempt++) {
+    // Retry Logic: Try all available fallback models
+    for (let attempt = 1; attempt <= fallbackModels.length; attempt++) {
       try {
         if (request.signal.aborted) throw new Error('Deployment canceled by user');
         const currentModelName = fallbackModels[attempt - 1];
@@ -137,7 +137,7 @@ export async function POST(request: Request) {
       } catch (e: any) {
         lastError = e.message;
         console.log(`Attempt ${attempt} failed:`, e.message);
-        if (attempt < 4) {
+        if (attempt < fallbackModels.length) {
           // If it's a quota error, wait 2 seconds and let the loop move to the next model
           await delay(2000); 
         }
