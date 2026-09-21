@@ -87,7 +87,7 @@ export async function POST(request: Request) {
     }
 
     const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
-    const fallbackModels = ['gemini-1.5-pro', 'gemini-1.5-flash', 'gemini-flash-latest', 'gemini-pro'];
+    const fallbackModels = ['gemini-1.5-pro', 'gemini-1.5-flash', 'gemini-1.5-flash-8b', 'gemini-1.5-flash'];
     
     let prompt = `You are an elite, top-tier SEO Content Architect. Write a massive, 1500+ word highly authoritative, data-backed, and engaging blog post specifically about "${primaryKeyword}" for a website in the "${niche}" niche.
     
