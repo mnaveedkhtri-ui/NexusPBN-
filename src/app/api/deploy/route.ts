@@ -28,6 +28,9 @@ export async function POST(request: Request) {
       moneyUrl = `https://${moneyUrl}`;
     }
 
+    const primaryKeyword = targetKeyword.trim() ? targetKeyword : anchorText;
+    let articleTitle = primaryKeyword.split(' ').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+
     // -------------------------------------------------------------
     // GOD-TIER AI IMAGE GENERATION (STRICTLY NO FACES/CATS)
     // -------------------------------------------------------------
