@@ -91,12 +91,11 @@ export async function POST(request: Request) {
 
     const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
     
-    // We use gemini-1.5-flash-8b-latest because it is extremely fast and rarely hits 503 limits compared to the standard flash models.
+    // We only use standard, guaranteed models to prevent 404 Not Found errors.
     const fallbackModels = [
-      'gemini-1.5-flash-8b-latest',
-      'gemini-1.5-flash-latest', 
-      'gemini-2.0-flash-exp',
-      'gemini-1.5-pro-latest'
+      'gemini-1.5-flash',
+      'gemini-1.5-pro',
+      'gemini-1.0-pro'
     ];
     
     // -------------------------------------------------------------
