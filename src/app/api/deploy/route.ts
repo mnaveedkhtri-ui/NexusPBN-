@@ -169,11 +169,30 @@ TONE OF VOICE: ${aiTone}`;
       }
     }
 
-    // If all 4 retries fail, DO NOT hide the error with a template.
-    // Throw the actual Google API error so the user knows their API key is exhausted or invalid.
+    // If all Google API attempts fail (e.g. 404, 503, Invalid Key), FALLBACK to Pollinations Free Text API!
     if (!success) {
-      console.error("All 4 AI generation attempts failed. Throwing actual API error.");
-      throw new Error(`Google Gemini API Error: ${lastError}. Please check your API key quotas or try again later.`);
+      console.error("All Google Gemini attempts failed. Falling back to Unauthenticated Pollinations Text API...", lastError);
+      try {
+        const pollRes = await fetch('https://text.pollinations.ai/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            messages: [
+              { role: 'system', content: 'You are an elite SEO expert.' },
+              { role: 'user', content: prompt }
+            ],
+            model: 'openai'
+          })
+        });
+        
+        if (!pollRes.ok) throw new Error("Pollinations fallback failed");
+        
+        markdownContent = await pollRes.text();
+        success = true;
+        console.log("Successfully generated article using Pollinations Fallback!");
+      } catch (fallbackError) {
+        throw new Error(`Google API Failed (${lastError}) AND Fallback Failed. Please check your API keys.`);
+      }
     }
 
     // Convert Markdown to HTML
