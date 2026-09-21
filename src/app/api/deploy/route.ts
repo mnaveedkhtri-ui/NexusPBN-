@@ -118,6 +118,9 @@ export async function POST(request: Request) {
     }
 
     let markdownContent = '';
+    let success = false;
+    let lastError = '';
+
     // Retry Logic: Try all available fallback models
     for (let attempt = 1; attempt <= fallbackModels.length; attempt++) {
       try {
