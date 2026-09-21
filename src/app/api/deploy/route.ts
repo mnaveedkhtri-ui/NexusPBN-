@@ -31,19 +31,17 @@ export async function POST(request: Request) {
     const primaryKeyword = targetKeyword.trim() ? targetKeyword : anchorText;
     let articleTitle = primaryKeyword.split(' ').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
 
-    // Generate 100% unique, high-definition AI images using Pollinations.ai Generative API
-    const randomSeed1 = Math.floor(Math.random() * 1000000);
-    const randomSeed2 = Math.floor(Math.random() * 1000000);
-    const randomSeed3 = Math.floor(Math.random() * 1000000);
+    // Generate 100% unique, high-definition stock images using LoremFlickr (Unsplash Alternative)
+    // We add a random number to the URL to bypass browser caching and ensure 3 unique images
+    const randomSeed1 = Math.floor(Math.random() * 10000);
+    const randomSeed2 = Math.floor(Math.random() * 10000);
+    const randomSeed3 = Math.floor(Math.random() * 10000);
     
-    // EXTREMELY STRICT prompts to generate Pixabay/Unsplash style stock photos (No faces, no weird AI artifacts)
-    const q1 = encodeURIComponent(`Professional flat lay product photography of ${primaryKeyword}, Unsplash style, clean minimalist background, highly detailed, 8k, no people, no faces, no text`);
-    const q2 = encodeURIComponent(`Cinematic stock photo representing ${niche}, professional studio lighting, realistic, 8k resolution, no people, no faces`);
-    const q3 = encodeURIComponent(`Aesthetic modern lifestyle objects related to ${primaryKeyword}, soft natural lighting, Pixabay style stock photo, high quality, no humans`);
-
-    const img1 = `https://image.pollinations.ai/prompt/${q1}?width=1200&height=630&nologo=true&seed=${randomSeed1}`;
-    const img2 = `https://image.pollinations.ai/prompt/${q2}?width=1200&height=630&nologo=true&seed=${randomSeed2}`;
-    const img3 = `https://image.pollinations.ai/prompt/${q3}?width=1200&height=630&nologo=true&seed=${randomSeed3}`;
+    // Clean keyword for Flickr search (e.g. 'organic skincare')
+    const searchTerms = encodeURIComponent(primaryKeyword.split(' ').slice(0, 2).join(','));
+    const img1 = `https://loremflickr.com/1200/630/${searchTerms},product/all?lock=${randomSeed1}`;
+    const img2 = `https://loremflickr.com/1200/630/${searchTerms},aesthetic/all?lock=${randomSeed2}`;
+    const img3 = `https://loremflickr.com/1200/630/${searchTerms},lifestyle/all?lock=${randomSeed3}`;
 
     if (!domain) {
       return NextResponse.json({ error: 'Domain is required' }, { status: 400 });
@@ -63,8 +61,8 @@ export async function POST(request: Request) {
     // We don't have team IDs yet, assume empty or null
     const VERCEL_TEAM_ID = '';
 
-    if (!GEMINI_API_KEY || !GITHUB_TOKEN || !VERCEL_TOKEN) {
-      return NextResponse.json({ error: 'Missing required API keys in Settings. (Gemini, GitHub, Vercel)' }, { status: 400 });
+    if (!GEMINI_API_KEY || !GITHUB_TOKEN || !VERCEL_TOKEN || !CLOUDFLARE_TOKEN || !CLOUDFLARE_ACCOUNT_ID) {
+      return NextResponse.json({ error: "One or more API keys are missing in Settings." }, { status: 400 });
     }
 
     // Clean up domain and add professional SEO suffixes instead of spammy numbers
@@ -105,9 +103,9 @@ export async function POST(request: Request) {
     
     Crucially: Include a natural, highly contextual backlink in the middle of the article using the exact anchor text "[${anchorText}](${moneyUrl})".
     
-    Also, embed exactly 2 high-quality images inside the body using these exact markdown tags:
-    ![${primaryKeyword} Concept](${img1})
-    ![${primaryKeyword} Implementation](${img2})
+    Also, embed exactly 2 high-quality images inside the body using these EXACT HTML tags (Do not use markdown for images):
+    <img src="${img1}" alt="${primaryKeyword} Concept" style="width:100%; border-radius:10px; margin-top:20px; margin-bottom:20px;" />
+    <img src="${img2}" alt="${primaryKeyword} Implementation" style="width:100%; border-radius:10px; margin-top:20px; margin-bottom:20px;" />
     
     CRITICAL SEO REQUIREMENT: Make the tone 1000% natural, human, and authoritative. Do NOT use generic AI filler like "In today's fast-paced world", "delve", "realm", "tapestry". Get straight to the point with high-value technical/industry insights.
     

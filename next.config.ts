@@ -10,6 +10,10 @@ const nextConfig: NextConfig = {
       {
         protocol: 'https',
         hostname: 'tse1.mm.bing.net',
+      },
+      {
+        protocol: 'https',
+        hostname: 'loremflickr.com',
       }
     ],
   },
