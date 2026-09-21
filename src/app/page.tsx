@@ -19,9 +19,17 @@ export default function LandingPage() {
             <Link href="/blog" className="hidden md:block text-sm font-medium text-[#888] hover:text-white transition-colors">
               Blog
             </Link>
-            <Link href="/autoblogging-alternative" className="hidden md:block text-sm font-medium text-[#888] hover:text-white transition-colors">
-              Compare
-            </Link>
+            <div className="hidden md:block relative group">
+              <button className="text-sm font-medium text-[#888] hover:text-white transition-colors flex items-center gap-1 py-4">
+                Alternatives
+              </button>
+              <div className="absolute top-full left-0 mt-0 w-48 bg-[#111] border border-[#222] rounded-xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 overflow-hidden">
+                <Link href="/alternatives/jasper-ai" className="block px-4 py-3 text-sm text-[#a3a3a3] hover:bg-[#222] hover:text-white transition-colors">Jasper AI</Link>
+                <Link href="/alternatives/wordai" className="block px-4 py-3 text-sm text-[#a3a3a3] hover:bg-[#222] hover:text-white transition-colors">WordAi</Link>
+                <Link href="/alternatives/wp-automatic" className="block px-4 py-3 text-sm text-[#a3a3a3] hover:bg-[#222] hover:text-white transition-colors">WP Automatic</Link>
+                <Link href="/alternatives/autoblogging-ai" className="block px-4 py-3 text-sm text-[#a3a3a3] hover:bg-[#222] hover:text-white transition-colors border-t border-[#222]">Autoblogging AI</Link>
+              </div>
+            </div>
             <div className="hidden md:block w-px h-4 bg-white/10 mx-2"></div>
             <Link href="/login" className="text-sm font-medium text-[#888] hover:text-white transition-colors">
               Sign In
@@ -94,17 +102,47 @@ export default function LandingPage() {
 
       {/* Footer */}
       <footer className="py-12 border-t border-white/5 bg-[#0a0a0a]">
-        <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-8 text-[#888] text-sm mb-8">
+        <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-8 text-[#888] text-sm mb-8">
           <div>
             <h4 className="text-white font-bold mb-4">Nexus PBN Deployer</h4>
-            <p>The ultimate static edge SEO platform for 2026.</p>
+            <p className="mb-4">The ultimate static edge SEO platform for 2026.</p>
           </div>
           <div>
-            <h4 className="text-white font-bold mb-4">SEO Comparisons</h4>
+            <h4 className="text-white font-bold mb-4">Resources</h4>
             <ul className="space-y-2">
               <li>
+                <Link href="/blog" className="hover:text-white transition">
+                  SEO Blog & Knowledge Base
+                </Link>
+              </li>
+              <li>
                 <Link href="/autoblogging-alternative" className="hover:text-white transition">
-                  Best Autoblogging.ai Alternative
+                  Autoblogging.ai Review & Alternative
+                </Link>
+              </li>
+            </ul>
+          </div>
+          <div>
+            <h4 className="text-white font-bold mb-4">Compare Alternatives</h4>
+            <ul className="space-y-2">
+              <li>
+                <Link href="/alternatives/jasper-ai" className="hover:text-white transition">
+                  Jasper AI Alternative
+                </Link>
+              </li>
+              <li>
+                <Link href="/alternatives/wordai" className="hover:text-white transition">
+                  WordAi Alternative
+                </Link>
+              </li>
+              <li>
+                <Link href="/alternatives/wp-automatic" className="hover:text-white transition">
+                  WP Automatic Alternative
+                </Link>
+              </li>
+              <li>
+                <Link href="/alternatives/autoblogging-ai" className="hover:text-white transition">
+                  Autoblogging AI Alternative
                 </Link>
               </li>
             </ul>
