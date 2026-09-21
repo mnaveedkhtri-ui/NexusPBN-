@@ -136,10 +136,10 @@ TONE OF VOICE: ${aiTone}`;
     let lastError = '';
 
     // -------------------------------------------------------------
-    // 503-PROOF EXPONENTIAL BACKOFF RETRY SYSTEM
+    // 503-PROOF EXPONENTIAL BACKOFF RETRY SYSTEM (60s Safe)
     // -------------------------------------------------------------
-    // We try up to 8 times across different models, with increasing delays to bypass Google's 503 spikes.
-    const maxAttempts = 8;
+    // We try up to 5 times across different models, with safe delays so Vercel doesn't kill the function.
+    const maxAttempts = 5;
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
       try {
         if (request.signal.aborted) throw new Error('Deployment canceled by user');
@@ -163,9 +163,9 @@ TONE OF VOICE: ${aiTone}`;
         lastError = e.message;
         console.log(`Attempt ${attempt} failed:`, e.message);
         if (attempt < maxAttempts) {
-          // Exponential backoff: 3s, 6s, 12s, 15s...
-          const waitTime = Math.min(3000 * Math.pow(2, attempt - 1), 15000);
-          console.log(`Waiting ${waitTime/1000}s before next attempt...`);
+          // Exponential backoff: 2s, 4s, 8s, 10s. Total wait = 24s.
+          const waitTime = Math.min(2000 * Math.pow(2, attempt - 1), 10000);
+          console.log(`Waiting ${waitTime/1000}s before next attempt to avoid Vercel 60s limit...`);
           await new Promise(res => setTimeout(res, waitTime));
         }
       }
