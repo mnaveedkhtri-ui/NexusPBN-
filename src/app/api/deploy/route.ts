@@ -32,14 +32,14 @@ export async function POST(request: Request) {
     let articleTitle = primaryKeyword.split(' ').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
 
     // Generate 100% unique, high-definition AI images using Pollinations.ai Generative API
-    // We use dynamic seeds so the images are NEVER the same, and they perfectly match the keyword.
     const randomSeed1 = Math.floor(Math.random() * 1000000);
     const randomSeed2 = Math.floor(Math.random() * 1000000);
     const randomSeed3 = Math.floor(Math.random() * 1000000);
     
-    const q1 = encodeURIComponent(`Professional photography of ${primaryKeyword}, hyperrealistic, 8k resolution, highly detailed`);
-    const q2 = encodeURIComponent(`Creative concept art for ${niche} industry, modern aesthetic, high quality, cinematic lighting`);
-    const q3 = encodeURIComponent(`Lifestyle editorial photo representing ${primaryKeyword}, elegant, modern, bright`);
+    // EXTREMELY STRICT prompts to generate Pixabay/Unsplash style stock photos (No faces, no weird AI artifacts)
+    const q1 = encodeURIComponent(`Professional flat lay product photography of ${primaryKeyword}, Unsplash style, clean minimalist background, highly detailed, 8k, no people, no faces, no text`);
+    const q2 = encodeURIComponent(`Cinematic stock photo representing ${niche}, professional studio lighting, realistic, 8k resolution, no people, no faces`);
+    const q3 = encodeURIComponent(`Aesthetic modern lifestyle objects related to ${primaryKeyword}, soft natural lighting, Pixabay style stock photo, high quality, no humans`);
 
     const img1 = `https://image.pollinations.ai/prompt/${q1}?width=1200&height=630&nologo=true&seed=${randomSeed1}`;
     const img2 = `https://image.pollinations.ai/prompt/${q2}?width=1200&height=630&nologo=true&seed=${randomSeed2}`;
@@ -118,83 +118,26 @@ export async function POST(request: Request) {
     }
 
     let markdownContent = '';
-    let success = false;
-    let lastError = '';
-
-    // DEVELOPER MAGIC BYPASS: If Google is down, use this masterpiece for testing!
-    if (primaryKeyword.toLowerCase().includes('skincare') || primaryKeyword.toLowerCase().includes('organic')) {
-      console.log("Using Developer Magic Bypass for Skincare test!");
-      success = true;
-      markdownContent = `Understanding the science behind **${primaryKeyword}** is the ultimate key to achieving flawless, glass skin. In the rapidly evolving landscape of ${niche}, relying on outdated routines is no longer effective. You need a data-backed, multi-step regimen.
-
-### In short:
-* The Korean approach to skincare focuses on hydration, barrier repair, and gentle exfoliation.
-* Implementing ${primaryKeyword} requires layering products from thinnest to thickest consistency.
-* Organic and cruelty-free ingredients yield the highest long-term ROI for your skin barrier.
-
-### Key Takeaways
-* **Double Cleansing:** The foundation of any successful K-Beauty routine starts with an oil-based cleanser followed by a water-based one.
-* **Essence & Serums:** These deliver concentrated active ingredients directly into the epidermis.
-* **Sun Protection:** The most critical step for anti-aging and protecting your skin matrix.
-
-## The 10-Step Architecture
-
-Historically, Western routines relied on harsh astringents. Today, executing strategies related to ${primaryKeyword} requires understanding skin barrier mechanics. By decoupling active treatments (like Retinol) from deep hydration (like Snail Mucin), you can achieve perfect results.
-
-Crucially, adopting [specialized, cruelty-free regimens](${moneyUrl}) acts as a direct catalyst for glowing skin, bypassing the limitations of traditional, chemical-heavy products.
-
-## Routine Comparison Matrix
-
-| Step | Traditional Routine | Advanced K-Beauty Implementation |
-|--------|------------------|-----------------------|
-| Cleansing | Single harsh wash | Double cleansing (Oil + Water) |
-| Toning | Alcohol-based astringents | Hydrating, pH-balancing toners |
-| Treatment | Generic moisturizer | Targeted essences, serums, and ampoules |
-
-![${primaryKeyword} Routine](${img1})
-
-## Advanced Implementation Guidelines
-
-To truly capitalize on ${primaryKeyword}, one must look beyond surface-level products. The goal is complete barrier optimization. When you integrate ${primaryKeyword} into your daily cycle, every product becomes a building block.
-
-![${primaryKeyword} Results](${img2})
-
-## Conclusion
-
-The shift towards highly optimized, organic execution in ${niche} is permanent. By integrating ${primaryKeyword} into your core routine, you protect your dermal assets from environmental volatility and ensure long-term, sustainable glow.
-
-## Frequently Asked Questions
-
-**Q: Why is ${primaryKeyword} becoming an industry standard?**
-A: Because it guarantees high hydration and zero barrier damage, making it the most resilient strategy available today.
-
-**Q: Does ${primaryKeyword} require massive financial investment?**
-A: No. With the advent of modern organic brands, individuals can build a premium routine on a budget.
-
-**Q: How does this impact long-term aging?**
-A: By removing harsh chemicals, your skin can focus entirely on cellular regeneration rather than inflammation repair.`;
-    } else {
-      // Retry Logic: Try all available fallback models
-      for (let attempt = 1; attempt <= fallbackModels.length; attempt++) {
-        try {
-          if (request.signal.aborted) throw new Error('Deployment canceled by user');
-          const currentModelName = fallbackModels[attempt - 1];
-          console.log(`Gemini Attempt ${attempt} using ${currentModelName}...`);
-          
-          const model = genAI.getGenerativeModel({ model: currentModelName });
-          const result = await model.generateContent(prompt);
-          markdownContent = result.response.text();
-          
-          success = true;
-          console.log(`Gemini succeeded on attempt ${attempt} with ${currentModelName}!`);
-          break; // Exit loop if successful
-        } catch (e: any) {
-          lastError = e.message;
-          console.log(`Attempt ${attempt} failed:`, e.message);
-          if (attempt < fallbackModels.length) {
-            // If it's a 503 high demand error, wait 4.5 seconds before retrying to let the server breathe
-            await delay(4500); 
-          }
+    // Retry Logic: Try all available fallback models
+    for (let attempt = 1; attempt <= fallbackModels.length; attempt++) {
+      try {
+        if (request.signal.aborted) throw new Error('Deployment canceled by user');
+        const currentModelName = fallbackModels[attempt - 1];
+        console.log(`Gemini Attempt ${attempt} using ${currentModelName}...`);
+        
+        const model = genAI.getGenerativeModel({ model: currentModelName });
+        const result = await model.generateContent(prompt);
+        markdownContent = result.response.text();
+        
+        success = true;
+        console.log(`Gemini succeeded on attempt ${attempt} with ${currentModelName}!`);
+        break; // Exit loop if successful
+      } catch (e: any) {
+        lastError = e.message;
+        console.log(`Attempt ${attempt} failed:`, e.message);
+        if (attempt < fallbackModels.length) {
+          // If it's a 503 high demand error, wait 4.5 seconds before retrying to let the server breathe
+          await delay(4500); 
         }
       }
     }
