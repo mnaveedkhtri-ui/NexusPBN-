@@ -314,13 +314,21 @@ TONE OF VOICE: ${aiTone}`;
 
 
     let finalArticleHtml = `<article class="prose prose-slate max-w-none">
-            <div class="flex items-center gap-4 mb-8">
+            <div class="flex items-center gap-4 mb-6">
               <span class="bg-blue-100 text-blue-700 text-xs font-bold px-3 py-1 uppercase tracking-wider rounded-full">${formattedNiche}</span>
               <span class="text-slate-500 text-sm font-medium">5 min read</span>
             </div>
-            <h1 class="text-4xl font-extrabold text-slate-900 mb-6 leading-tight tracking-tight">${articleTitle}</h1>
+            <h1 class="text-4xl md:text-5xl font-extrabold text-slate-900 mb-6 leading-tight tracking-tight">${articleTitle}</h1>
             <p class="text-xl text-slate-600 mb-8 leading-relaxed font-medium">Comprehensive insights and complete guide on ${primaryKeyword}.</p>
-            ${htmlArticleContent}
+            
+            <!-- FEATURE IMAGE -->
+            <div class="w-full h-[400px] md:h-[500px] mb-10 rounded-2xl overflow-hidden shadow-lg relative">
+              <img src="${img3}" alt="${articleTitle}" class="w-full h-full object-cover transition-transform duration-700 hover:scale-105" />
+            </div>
+
+            <div class="article-content">
+              ${htmlArticleContent}
+            </div>
           </article>`;
     
     // SEO STRICT LIMITS: Title under 70 chars, Meta Description under 155 chars
