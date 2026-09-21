@@ -87,7 +87,8 @@ export async function POST(request: Request) {
     }
 
     const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
-    const fallbackModels = ['gemini-1.5-pro-latest', 'gemini-1.5-flash-latest', 'gemini-flash-latest'];
+    // Expand the array to give us 5 strong attempts on the fastest models
+    const fallbackModels = ['gemini-1.5-pro-latest', 'gemini-1.5-flash-latest', 'gemini-1.5-flash-latest', 'gemini-1.5-flash-latest', 'gemini-flash-latest'];
     
     let prompt = `You are an elite, top-tier SEO Content Architect. Write a massive, 1500+ word highly authoritative, data-backed, and engaging blog post specifically about "${primaryKeyword}" for a website in the "${niche}" niche.
     
@@ -138,8 +139,8 @@ export async function POST(request: Request) {
         lastError = e.message;
         console.log(`Attempt ${attempt} failed:`, e.message);
         if (attempt < fallbackModels.length) {
-          // If it's a quota error, wait 2 seconds and let the loop move to the next model
-          await delay(2000); 
+          // If it's a 503 high demand error, wait 4.5 seconds before retrying to let the server breathe
+          await delay(4500); 
         }
       }
     }
