@@ -93,10 +93,12 @@ export async function POST(request: Request) {
 
     const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
     
-    // We only use standard, guaranteed free-tier models with the '-latest' suffix to prevent 404 Not Found errors.
+    // We use all official base model names to ensure at least one matches their API tier.
     const fallbackModels = [
-      'gemini-1.5-flash-latest',
-      'gemini-1.0-pro-latest'
+      'gemini-1.5-flash',
+      'gemini-1.5-flash-001',
+      'gemini-1.5-flash-002',
+      'gemini-1.0-pro'
     ];
     
     // -------------------------------------------------------------
