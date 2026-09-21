@@ -31,15 +31,19 @@ export async function POST(request: Request) {
     const primaryKeyword = targetKeyword.trim() ? targetKeyword : anchorText;
     let articleTitle = primaryKeyword.split(' ').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
 
-    // Generate hyper-relevant image queries based on the user's specific niche and keyword
-    const q1 = encodeURIComponent(`${primaryKeyword} high quality`);
-    const q2 = encodeURIComponent(`${niche} concept professional`);
-    const q3 = encodeURIComponent(`${niche} lifestyle modern`);
+    // Generate 100% unique, high-definition AI images using Pollinations.ai Generative API
+    // We use dynamic seeds so the images are NEVER the same, and they perfectly match the keyword.
+    const randomSeed1 = Math.floor(Math.random() * 1000000);
+    const randomSeed2 = Math.floor(Math.random() * 1000000);
+    const randomSeed3 = Math.floor(Math.random() * 1000000);
+    
+    const q1 = encodeURIComponent(`Professional photography of ${primaryKeyword}, hyperrealistic, 8k resolution, highly detailed`);
+    const q2 = encodeURIComponent(`Creative concept art for ${niche} industry, modern aesthetic, high quality, cinematic lighting`);
+    const q3 = encodeURIComponent(`Lifestyle editorial photo representing ${primaryKeyword}, elegant, modern, bright`);
 
-    // Use Bing's highly robust Thumbnail API to dynamically fetch exact 1200x630 images based on the queries
-    const img1 = `https://tse1.mm.bing.net/th?q=${q1}&w=1200&h=630&c=7&rs=1`;
-    const img2 = `https://tse1.mm.bing.net/th?q=${q2}&w=1200&h=630&c=7&rs=1`;
-    const img3 = `https://tse1.mm.bing.net/th?q=${q3}&w=1200&h=630&c=7&rs=1`;
+    const img1 = `https://image.pollinations.ai/prompt/${q1}?width=1200&height=630&nologo=true&seed=${randomSeed1}`;
+    const img2 = `https://image.pollinations.ai/prompt/${q2}?width=1200&height=630&nologo=true&seed=${randomSeed2}`;
+    const img3 = `https://image.pollinations.ai/prompt/${q3}?width=1200&height=630&nologo=true&seed=${randomSeed3}`;
 
     if (!domain) {
       return NextResponse.json({ error: 'Domain is required' }, { status: 400 });
