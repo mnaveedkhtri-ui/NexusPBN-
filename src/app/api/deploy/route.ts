@@ -160,6 +160,14 @@ TONE OF VOICE: ${aiTone}`;
       } catch (e: any) {
         lastError = e.message;
         console.log(`Attempt ${attempt} failed:`, e.message);
+        
+        // FAIL-FAST: If the error is 404 (Not Found) or 400 (Bad Request), retrying will never help. 
+        // We must break immediately to save Vercel execution time and jump straight to the Pollinations Fallback.
+        if (e.message.includes('404') || e.message.includes('400') || e.message.includes('not found') || e.message.includes('API_KEY_INVALID')) {
+           console.log("Fatal API Error (404/400). Skipping remaining retries to avoid Vercel timeout.");
+           break;
+        }
+
         if (attempt < maxAttempts) {
           // Exponential backoff: 2s, 4s, 8s, 10s. Total wait = 24s.
           const waitTime = Math.min(2000 * Math.pow(2, attempt - 1), 10000);
